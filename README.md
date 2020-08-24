@@ -6,7 +6,7 @@ A flutter plugin for .net SignalR client.
 
 First of all, Initialize SignalR and connect to your server.
 
-```
+```dart
 SignalR signalR = SignalR(
         '<Your server url here>',
         "<Your hub name here>",
@@ -19,11 +19,15 @@ Here `statusChangeCallback` will get called whenever connection status with serv
 
 `hubCallback` will receive calls from the server if you subscribe to any hub method. You can do that with,
 
-`signalR.subscribeToHubMethod("methodName")`
+```dart
+signalR.subscribeToHubMethod("methodName");
+```
 
 You can also invoke any server method.
 
-`signalR.invokeMethod("<Your method name here>", arguments: ["argument"])`
+```dart
+signalR.invokeMethod("<Your method name here>", arguments: ["argument"]);
+```
 
 For more info check example.
 
