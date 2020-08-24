@@ -1,7 +1,6 @@
 name: signalr_flutter
 description: A new flutter plugin project.
 version: 0.0.1
-author: Ayon Das
 homepage: https://github.com/AS-Devs/signalr_flutter
 
 environment:
