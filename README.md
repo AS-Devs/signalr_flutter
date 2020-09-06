@@ -29,6 +29,18 @@ You can also invoke any server method.
 signalR.invokeMethod("<Your method name here>", arguments: ["argument"]);
 ```
 
+
+If you are trying to connect with a HTTP url, then you need to add the following lines to the manifest of your android project.
+
+```xml
+<application
+        android:usesCleartextTraffic="true">
+</application>
+```
+
+This is because of the [Network Security Config](https://developer.android.com/training/articles/security-config#CleartextTrafficPermitted).
+
+
 For more info check example.
 
 Any issue or PR is always welcome.
