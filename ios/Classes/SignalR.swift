@@ -17,12 +17,22 @@ class SignalRWrapper {
   private var hub: Hub!
   private var connection: SignalR!
 
-  func connectToServer(baseUrl: String, hubName: String, queryString : String, result: @escaping FlutterResult) {
+  func connectToServer(baseUrl: String, hubName: String, transport: Int, queryString : String, headers: [String: String], result: @escaping FlutterResult) {
     connection = SignalR(baseUrl)
 
     if !queryString.isEmpty {
       let qs = queryString.components(separatedBy: "=")
       connection.queryString = [qs[0]:qs[1]]
+    }
+
+    if transport == 1 {
+      connection.transport = Transport.serverSentEvents
+    } else if transport == 2 {
+      connection.transport = Transport.longPolling
+    }
+
+    if headers.count > 0 {
+      connection.headers = headers
     }
 
     hub = connection.createHubProxy(hubName)

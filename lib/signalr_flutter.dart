@@ -1,11 +1,15 @@
 import 'dart:async';
 import 'package:flutter/services.dart';
 
+enum Transport { Auto, ServerSentEvents, LongPolling }
+
 /// A .Net SignalR Client for Flutter.
 class SignalR {
   final String baseUrl;
   final String queryString;
   final String hubName;
+  final Transport transport;
+  final Map<String, String> headers;
 
   /// This callback gets called whenever SignalR connection status with server changes.
   final Function(String) statusChangeCallback;
@@ -19,7 +23,11 @@ class SignalR {
   static const String NEW_MESSAGE = "NewMessage";
 
   SignalR(this.baseUrl, this.hubName,
-      {this.queryString, this.statusChangeCallback, this.hubCallback})
+      {this.queryString,
+      this.headers,
+      this.transport = Transport.Auto,
+      this.statusChangeCallback,
+      this.hubCallback})
       : assert(baseUrl != null && baseUrl != ''),
         assert(hubName != null && hubName != '');
 
@@ -31,8 +39,10 @@ class SignalR {
       final result = await _channel
           .invokeMethod<bool>("connectToServer", <String, dynamic>{
         'baseUrl': baseUrl,
-        "hubName": hubName,
+        'hubName': hubName,
         'queryString': queryString ?? "",
+        'headers': headers ?? {},
+        'transport': transport.index
       });
 
       _signalRCallbackHandler();

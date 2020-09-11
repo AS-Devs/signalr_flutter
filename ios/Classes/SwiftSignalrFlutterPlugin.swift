@@ -16,7 +16,7 @@ public class SwiftSignalRFlutterPlugin: NSObject, FlutterPlugin {
 
     case CallMethod.connectToServer.rawValue:
       let arguments = call.arguments as! Dictionary<String, Any>
-      SignalRWrapper.instance.connectToServer(baseUrl: arguments["baseUrl"] as! String, hubName: arguments["hubName"] as! String, queryString: arguments["queryString"] as? String ?? "", result: result)
+      SignalRWrapper.instance.connectToServer(baseUrl: arguments["baseUrl"] as! String, hubName: arguments["hubName"] as! String, transport: arguments["transport"] as? Int ?? 0, queryString: arguments["queryString"] as? String ?? "", headers: arguments["headers"] as? [String:String] ?? [String: String](), result: result)
       break
 
     case CallMethod.reconnect.rawValue:
