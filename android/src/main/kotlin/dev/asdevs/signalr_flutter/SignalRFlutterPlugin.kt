@@ -37,28 +37,33 @@ public class SignalRFlutterPlugin : FlutterPlugin, MethodCallHandler {
 
     override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {
         when (call.method) {
-          CallMethod.ConnectToServer.value -> {
-            val arguments = call.arguments as Map<*, *>
-            SignalR.connectToServer(arguments["baseUrl"] as String, arguments["hubName"] as String, arguments["queryString"] as String, result)
-          }
-          CallMethod.Reconnect.value -> {
-            SignalR.reconnect(result)
-          }
-          CallMethod.Stop.value -> {
-            SignalR.stop(result)
-          }
-          CallMethod.ListenToHubMethod.value -> {
-            if (call.arguments is String) {
-              val methodName = call.arguments as String
-              SignalR.listenToHubMethod(methodName, result)
-            } else {
-              result.error("Error", "Cast to String Failed", "")
+            CallMethod.ConnectToServer.value -> {
+                val arguments = call.arguments as Map<*, *>
+                @Suppress("UNCHECKED_CAST")
+                SignalR.connectToServer(arguments["baseUrl"] as String, arguments["hubName"] as String, arguments["queryString"] as String,
+                        arguments["headers"] as? Map<String, String>
+                                ?: emptyMap(), arguments["transport"] as Int, result)
             }
-          }
-          CallMethod.InvokeServerMethod.value -> {
-            val arguments = call.arguments as Map<*, *>
-            SignalR.invokeServerMethod(arguments["methodName"] as String, arguments["arguments"], result)
-          }
+            CallMethod.Reconnect.value -> {
+                SignalR.reconnect(result)
+            }
+            CallMethod.Stop.value -> {
+                SignalR.stop(result)
+            }
+            CallMethod.ListenToHubMethod.value -> {
+                if (call.arguments is String) {
+                    val methodName = call.arguments as String
+                    SignalR.listenToHubMethod(methodName, result)
+                } else {
+                    result.error("Error", "Cast to String Failed", "")
+                }
+            }
+            CallMethod.InvokeServerMethod.value -> {
+                val arguments = call.arguments as Map<*, *>
+                @Suppress("UNCHECKED_CAST")
+                SignalR.invokeServerMethod(arguments["methodName"] as String, arguments["arguments"] as? List<Any>
+                        ?: emptyList(), result)
+            }
             else -> {
                 result.notImplemented()
             }

@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/services.dart';
 
+/// Transport method of the signalr connection.
 enum Transport { Auto, ServerSentEvents, LongPolling }
 
 /// A .Net SignalR Client for Flutter.
@@ -8,6 +9,7 @@ class SignalR {
   final String baseUrl;
   final String queryString;
   final String hubName;
+  /// [Transport.Auto] is default.
   final Transport transport;
   final Map<String, String> headers;
 
@@ -97,10 +99,18 @@ class SignalR {
   }
 
   /// Invoke any server method with optional [arguments].
-  Future invokeMethod(String methodName, {List<String> arguments}) async {
+  ///
+  /// [arguments] can have maximum of 5 elements in it.
+  Future invokeMethod(String methodName, {List<dynamic> arguments}) async {
     try {
-      final result = await _channel.invokeMethod("invokeServerMethod",
-          <String, dynamic>{'methodName': methodName, 'arguments': arguments});
+      if ((arguments?.length ?? 0) > 5)
+        throw Exception("arguments list can have maximum of 5 elements. You have ${arguments.length} elements in arguments list.");
+
+      final result = await _channel.invokeMethod(
+          "invokeServerMethod", <String, dynamic>{
+        'methodName': methodName,
+        'arguments': arguments ?? List.empty()
+      });
       return result;
     } on PlatformException catch (ex) {
       print("Platform Error: ${ex.message}");
@@ -119,7 +129,6 @@ class SignalR {
           statusChangeCallback(call.arguments);
           break;
         case NEW_MESSAGE:
-          //print(call.arguments[0]);
           hubCallback(call.arguments);
           break;
         default:

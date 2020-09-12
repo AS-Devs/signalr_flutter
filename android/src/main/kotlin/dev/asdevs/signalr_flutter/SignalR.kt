@@ -2,11 +2,12 @@ package dev.asdevs.signalr_flutter
 
 import android.os.Looper
 import io.flutter.plugin.common.MethodChannel.Result
-import microsoft.aspnet.signalr.client.LogLevel
-import microsoft.aspnet.signalr.client.Logger
-import microsoft.aspnet.signalr.client.SignalRFuture
+import microsoft.aspnet.signalr.client.*
+import microsoft.aspnet.signalr.client.http.android.AndroidPlatformComponent
 import microsoft.aspnet.signalr.client.hubs.HubConnection
 import microsoft.aspnet.signalr.client.hubs.HubProxy
+import microsoft.aspnet.signalr.client.transport.LongPollingTransport
+import microsoft.aspnet.signalr.client.transport.ServerSentEventsTransport
 
 enum class CallMethod(val value: String) {
     ConnectToServer("connectToServer"),
@@ -20,7 +21,7 @@ object SignalR {
     private lateinit var connection: HubConnection
     private lateinit var hub: HubProxy
 
-    fun connectToServer(url: String, hubName: String, queryString: String, result: Result) {
+    fun connectToServer(url: String, hubName: String, queryString: String, headers: Map<String, String>, transport: Int, result: Result) {
         try {
             connection = if (queryString.isEmpty()) {
                 HubConnection(url)
@@ -29,6 +30,12 @@ object SignalR {
                 })
             }
 
+            if (headers.isNotEmpty()) {
+                val cred = Credentials() { request ->
+                    request.headers = headers
+                }
+                connection.credentials = cred
+            }
             hub = connection.createHubProxy(hubName)
 
             connection.connected {
@@ -67,7 +74,14 @@ object SignalR {
                 }
             }
 
-            connection.start()
+            when (transport) {
+                1 -> connection.start(ServerSentEventsTransport(connection.logger))
+                2 -> connection.start(LongPollingTransport(connection.logger))
+                else -> {
+                    connection.start()
+                }
+            }
+
             result.success(true)
         } catch (ex: Exception) {
             result.error("Error", ex.localizedMessage, null)
@@ -102,9 +116,17 @@ object SignalR {
         }
     }
 
-    fun invokeServerMethod(methodName: String, args: Any?, result: Result) {
+    fun invokeServerMethod(methodName: String, args: List<Any>, result: Result) {
         try {
-            val res: SignalRFuture<String> = hub.invoke(String::class.java, methodName, args)
+            val res: SignalRFuture<String> = when (args.count()) {
+                0 -> hub.invoke(String::class.java, methodName)
+                1 -> hub.invoke(String::class.java, methodName, args[0])
+                2 -> hub.invoke(String::class.java, methodName, args[0], args[1])
+                3 -> hub.invoke(String::class.java, methodName, args[0], args[1], args[2])
+                4 -> hub.invoke(String::class.java, methodName, args[0], args[1], args[2], args[3])
+                5 -> hub.invoke(String::class.java, methodName, args[0], args[1], args[2], args[3], args[4])
+                else -> throw Exception("Maximum 5 arguments supported. Your arguments List count is ${args.count()}.")
+            }
 
             res.done { msg: String? ->
                 android.os.Handler(Looper.getMainLooper()).post {
