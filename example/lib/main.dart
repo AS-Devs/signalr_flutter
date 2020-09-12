@@ -25,10 +25,8 @@ class _MyAppState extends State<MyApp> {
   // Platform messages are asynchronous, so we initialize in an async method.
   Future<void> initPlatformState() async {
     signalR = SignalR(
-        '<Your server url here>',
-        "<Your hub name here>",
-        statusChangeCallback: _onStatusChange,
-        hubCallback: _onNewMessage);
+        '<Your url here>', "<Your hubname here>",
+        statusChangeCallback: _onStatusChange, hubCallback: _onNewMessage);
   }
 
   @override
@@ -82,7 +80,10 @@ class _MyAppState extends State<MyApp> {
   }
 
   _buttonTapped() async {
-    final res = await signalR.invokeMethod("<Your method name here>", arguments: ["test"]);
+    final res = await signalR
+        .invokeMethod("<Your methodname here>", arguments: ['<Your arguments here>']).catchError((error) {
+          print(error.toString());
+        });
     final snackBar =
         SnackBar(content: Text('SignalR Method Response: ${res.toString()}'));
     _scaffoldKey.currentState.showSnackBar(snackBar);
