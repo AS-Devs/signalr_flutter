@@ -34,7 +34,7 @@ public class SwiftSignalRFlutterPlugin: NSObject, FlutterPlugin {
 
     case CallMethod.invokeServerMethod.rawValue:
       let arguments = call.arguments as! Dictionary<String, Any>
-      SignalRWrapper.instance.invokeServerMethod(methodName: arguments["methodName"] as! String, arguments: arguments["arguments"] as? [String], result: result)
+      SignalRWrapper.instance.invokeServerMethod(methodName: arguments["methodName"] as! String, arguments: arguments["arguments"] as? [Any], result: result)
       break
 
     default:

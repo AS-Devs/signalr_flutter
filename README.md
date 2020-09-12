@@ -22,11 +22,13 @@ Here `statusChangeCallback` will get called whenever connection status with serv
 ```dart
 signalR.subscribeToHubMethod("methodName");
 ```
+There is a `headers` parameters also which takes a `Map<String, String>`.
 
 You can also invoke any server method.
+Note: `arguments` list can have maximum number of five elements.
 
 ```dart
-signalR.invokeMethod("<Your method name here>", arguments: ["argument"]);
+signalR.invokeMethod("<Your method name here>", arguments: ["argument1", "argument2"]);
 ```
 
 

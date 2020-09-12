@@ -108,7 +108,7 @@ class SignalRWrapper {
     }
   }
 
-  func invokeServerMethod(methodName: String, arguments: [String]? = nil, result: @escaping FlutterResult) {
+  func invokeServerMethod(methodName: String, arguments: [Any]? = nil, result: @escaping FlutterResult) {
     do {
       if let hub = self.hub {
         try hub.invoke(methodName, arguments: arguments, callback: { (res, error) in
