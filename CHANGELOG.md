@@ -10,3 +10,7 @@
 
 * Connection Headers and Transport customization added
 * Minor changes and a bug fix for invokeServerMethod
+
+## 0.0.4
+
+* Minor Updates.

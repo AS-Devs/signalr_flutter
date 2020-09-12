@@ -9,6 +9,7 @@ class SignalR {
   final String baseUrl;
   final String queryString;
   final String hubName;
+
   /// [Transport.Auto] is default.
   final Transport transport;
   final Map<String, String> headers;
@@ -104,7 +105,8 @@ class SignalR {
   Future invokeMethod(String methodName, {List<dynamic> arguments}) async {
     try {
       if ((arguments?.length ?? 0) > 5)
-        throw Exception("arguments list can have maximum of 5 elements. You have ${arguments.length} elements in arguments list.");
+        throw Exception(
+            "arguments list can have maximum of 5 elements. You have ${arguments.length} elements in arguments list.");
 
       final result = await _channel.invokeMethod(
           "invokeServerMethod", <String, dynamic>{
