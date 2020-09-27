@@ -14,3 +14,7 @@
 ## 0.0.4
 
 * Minor Updates.
+
+## 0.0.5
+
+* Fixed a bug where invokeMethod only accepting string as return value

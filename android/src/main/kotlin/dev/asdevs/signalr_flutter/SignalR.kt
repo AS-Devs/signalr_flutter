@@ -118,17 +118,17 @@ object SignalR {
 
     fun invokeServerMethod(methodName: String, args: List<Any>, result: Result) {
         try {
-            val res: SignalRFuture<String> = when (args.count()) {
-                0 -> hub.invoke(String::class.java, methodName)
-                1 -> hub.invoke(String::class.java, methodName, args[0])
-                2 -> hub.invoke(String::class.java, methodName, args[0], args[1])
-                3 -> hub.invoke(String::class.java, methodName, args[0], args[1], args[2])
-                4 -> hub.invoke(String::class.java, methodName, args[0], args[1], args[2], args[3])
-                5 -> hub.invoke(String::class.java, methodName, args[0], args[1], args[2], args[3], args[4])
+            val res: SignalRFuture<Any> = when (args.count()) {
+                0 -> hub.invoke(Any::class.java, methodName)
+                1 -> hub.invoke(Any::class.java, methodName, args[0])
+                2 -> hub.invoke(Any::class.java, methodName, args[0], args[1])
+                3 -> hub.invoke(Any::class.java, methodName, args[0], args[1], args[2])
+                4 -> hub.invoke(Any::class.java, methodName, args[0], args[1], args[2], args[3])
+                5 -> hub.invoke(Any::class.java, methodName, args[0], args[1], args[2], args[3], args[4])
                 else -> throw Exception("Maximum 5 arguments supported. Your arguments List count is ${args.count()}.")
             }
 
-            res.done { msg: String? ->
+            res.done { msg: Any? ->
                 android.os.Handler(Looper.getMainLooper()).post {
                     result.success(msg)
                 }
