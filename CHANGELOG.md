@@ -18,3 +18,8 @@
 ## 0.0.5
 
 * Fixed a bug where invokeMethod only accepting string as return value
+
+## 0.0.6-dev.1
+
+* Possible fix for callbacks throwing exception about type mismatch.
+* invokeMethod now has generic return type & upto 10 arguments support.

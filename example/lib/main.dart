@@ -67,10 +67,10 @@ class _MyAppState extends State<MyApp> {
     );
   }
 
-  _onStatusChange(String status) {
+  _onStatusChange(dynamic status) {
     if (mounted) {
       setState(() {
-        _signalRStatus = status;
+        _signalRStatus = status as String;
       });
     }
   }
@@ -81,11 +81,11 @@ class _MyAppState extends State<MyApp> {
 
   _buttonTapped() async {
     final res = await signalR
-        .invokeMethod("<Your methodname here>", arguments: ['<Your arguments here>']).catchError((error) {
+        .invokeMethod<String>("<Your methodname here>", arguments: ['<Your arguments here>']).catchError((error) {
           print(error.toString());
         });
     final snackBar =
-        SnackBar(content: Text('SignalR Method Response: ${res.toString()}'));
+        SnackBar(content: Text('SignalR Method Response: $res'));
     _scaffoldKey.currentState.showSnackBar(snackBar);
   }
 }
