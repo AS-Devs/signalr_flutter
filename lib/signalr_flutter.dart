@@ -15,7 +15,7 @@ class SignalR {
   final Map<String, String> headers;
 
   /// This callback gets called whenever SignalR connection status with server changes.
-  final Function(String) statusChangeCallback;
+  final Function(dynamic) statusChangeCallback;
 
   /// This callback gets called whenever SignalR server sends some message to client.
   final Function(dynamic) hubCallback;
@@ -101,14 +101,14 @@ class SignalR {
 
   /// Invoke any server method with optional [arguments].
   ///
-  /// [arguments] can have maximum of 5 elements in it.
-  Future invokeMethod(String methodName, {List<dynamic> arguments}) async {
+  /// [arguments] can have maximum of 10 elements in it.
+  Future<T> invokeMethod<T>(String methodName, {List<dynamic> arguments}) async {
     try {
-      if ((arguments?.length ?? 0) > 5)
+      if ((arguments?.length ?? 0) > 10)
         throw Exception(
-            "arguments list can have maximum of 5 elements. You have ${arguments.length} elements in arguments list.");
+            "arguments list can have maximum of 10 elements. You have ${arguments.length} elements in arguments list.");
 
-      final result = await _channel.invokeMethod(
+      final result = await _channel.invokeMethod<T>(
           "invokeServerMethod", <String, dynamic>{
         'methodName': methodName,
         'arguments': arguments ?? List.empty()

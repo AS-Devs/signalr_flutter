@@ -106,11 +106,11 @@ object SignalR {
 
     fun listenToHubMethod(methodName: String, result: Result) {
         try {
-            hub.on<String>(methodName, { res ->
+            hub.on(methodName, { res ->
                 android.os.Handler(Looper.getMainLooper()).post {
                     SignalRFlutterPlugin.channel.invokeMethod("NewMessage", res)
                 }
-            }, String::class.java)
+            }, Any::class.java)
         } catch (ex: Exception) {
             result.error("Error", ex.localizedMessage, null)
         }
@@ -125,7 +125,12 @@ object SignalR {
                 3 -> hub.invoke(Any::class.java, methodName, args[0], args[1], args[2])
                 4 -> hub.invoke(Any::class.java, methodName, args[0], args[1], args[2], args[3])
                 5 -> hub.invoke(Any::class.java, methodName, args[0], args[1], args[2], args[3], args[4])
-                else -> throw Exception("Maximum 5 arguments supported. Your arguments List count is ${args.count()}.")
+                6 -> hub.invoke(Any::class.java, methodName, args[0], args[1], args[2], args[3], args[4], args[5])
+                7 -> hub.invoke(Any::class.java, methodName, args[0], args[1], args[2], args[3], args[4], args[5], args[6])
+                8 -> hub.invoke(Any::class.java, methodName, args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7])
+                9 -> hub.invoke(Any::class.java, methodName, args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8])
+                10 -> hub.invoke(Any::class.java, methodName, args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9])
+                else -> throw Exception("Maximum 10 arguments supported. Your arguments List count is ${args.count()}.")
             }
 
             res.done { msg: Any? ->
