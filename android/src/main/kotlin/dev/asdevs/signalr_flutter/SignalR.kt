@@ -108,7 +108,7 @@ object SignalR {
         try {
             hub.on(methodName, { res ->
                 android.os.Handler(Looper.getMainLooper()).post {
-                    SignalRFlutterPlugin.channel.invokeMethod("NewMessage", res)
+                    SignalRFlutterPlugin.channel.invokeMethod("NewMessage", listOf(methodName, res))
                 }
             }, Any::class.java)
         } catch (ex: Exception) {

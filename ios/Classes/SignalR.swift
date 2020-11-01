@@ -101,7 +101,7 @@ class SignalRWrapper {
   func listenToHubMethod(methodName : String, result: @escaping FlutterResult) {
     if let hub = self.hub {
       hub.on(methodName) { (args) in
-        SwiftSignalRFlutterPlugin.channel.invokeMethod("NewMessage", arguments: args?[0])
+        SwiftSignalRFlutterPlugin.channel.invokeMethod("NewMessage", arguments: [methodName, args?[0]])
       }
     } else {
       result(FlutterError(code: "Error", message: "SignalR Connection not found or null", details: "Connect SignalR before listening a Hub method"))

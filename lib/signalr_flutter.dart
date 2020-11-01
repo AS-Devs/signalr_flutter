@@ -18,7 +18,7 @@ class SignalR {
   final Function(dynamic) statusChangeCallback;
 
   /// This callback gets called whenever SignalR server sends some message to client.
-  final Function(dynamic) hubCallback;
+  final Function(String, dynamic) hubCallback;
 
   static const MethodChannel _channel = const MethodChannel('signalR');
 
@@ -102,7 +102,8 @@ class SignalR {
   /// Invoke any server method with optional [arguments].
   ///
   /// [arguments] can have maximum of 10 elements in it.
-  Future<T> invokeMethod<T>(String methodName, {List<dynamic> arguments}) async {
+  Future<T> invokeMethod<T>(String methodName,
+      {List<dynamic> arguments}) async {
     try {
       if ((arguments?.length ?? 0) > 10)
         throw Exception(
@@ -131,7 +132,11 @@ class SignalR {
           statusChangeCallback(call.arguments);
           break;
         case NEW_MESSAGE:
-          hubCallback(call.arguments);
+          if (call.arguments is List) {
+            hubCallback(call.arguments[0], call.arguments[1]);
+          } else {
+            hubCallback("", call.arguments);
+          }
           break;
         default:
       }
