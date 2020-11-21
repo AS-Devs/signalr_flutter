@@ -23,3 +23,8 @@
 
 * Possible fix for callbacks throwing exception about type mismatch.
 * invokeMethod now has generic return type & upto 10 arguments support.
+
+## 0.0.6-dev.2
+
+* HubCallBack function now returns the value as well as the subscribed method name.
+* invokeMethod now can take as many arguments as you want.

@@ -89,6 +89,7 @@ class SignalR {
   /// Subscribe to a Hub method. Every subsequent message from server gets called on [hubCallback].
   void subscribeToHubMethod(String methodName) async {
     try {
+      assert(methodName != null, "methodName can not be null.");
       await _channel.invokeMethod("listenToHubMethod", methodName);
     } on PlatformException catch (ex) {
       print("Platform Error: ${ex.message}");
@@ -105,10 +106,7 @@ class SignalR {
   Future<T> invokeMethod<T>(String methodName,
       {List<dynamic> arguments}) async {
     try {
-      if ((arguments?.length ?? 0) > 10)
-        throw Exception(
-            "arguments list can have maximum of 10 elements. You have ${arguments.length} elements in arguments list.");
-
+      assert(methodName != null, "methodName can not be null.");
       final result = await _channel.invokeMethod<T>(
           "invokeServerMethod", <String, dynamic>{
         'methodName': methodName,

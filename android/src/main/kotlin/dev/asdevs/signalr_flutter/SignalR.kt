@@ -118,20 +118,7 @@ object SignalR {
 
     fun invokeServerMethod(methodName: String, args: List<Any>, result: Result) {
         try {
-            val res: SignalRFuture<Any> = when (args.count()) {
-                0 -> hub.invoke(Any::class.java, methodName)
-                1 -> hub.invoke(Any::class.java, methodName, args[0])
-                2 -> hub.invoke(Any::class.java, methodName, args[0], args[1])
-                3 -> hub.invoke(Any::class.java, methodName, args[0], args[1], args[2])
-                4 -> hub.invoke(Any::class.java, methodName, args[0], args[1], args[2], args[3])
-                5 -> hub.invoke(Any::class.java, methodName, args[0], args[1], args[2], args[3], args[4])
-                6 -> hub.invoke(Any::class.java, methodName, args[0], args[1], args[2], args[3], args[4], args[5])
-                7 -> hub.invoke(Any::class.java, methodName, args[0], args[1], args[2], args[3], args[4], args[5], args[6])
-                8 -> hub.invoke(Any::class.java, methodName, args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7])
-                9 -> hub.invoke(Any::class.java, methodName, args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8])
-                10 -> hub.invoke(Any::class.java, methodName, args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9])
-                else -> throw Exception("Maximum 10 arguments supported. Your arguments List count is ${args.count()}.")
-            }
+            val res: SignalRFuture<Any> = hub.invoke(Any::class.java, methodName, *args.toTypedArray())
 
             res.done { msg: Any? ->
                 android.os.Handler(Looper.getMainLooper()).post {
