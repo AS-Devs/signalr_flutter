@@ -28,3 +28,7 @@
 
 * HubCallBack function now returns the value as well as the subscribed method name.
 * invokeMethod now can take as many arguments as you want.
+
+## 0.0.6-dev.3
+
+* Possible fix for ios Hub events not returning
