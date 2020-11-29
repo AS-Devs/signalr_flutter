@@ -228,6 +228,7 @@ open class SignalR: NSObject, WKNavigationDelegate, WKScriptMessageHandler {
 
       let config = WKWebViewConfiguration()
       config.userContentController.add(self, name: "interOp")
+      config.setValue(true, forKey: "allowUniversalAccessFromFileURLs")
 
       wkWebView = WKWebView(frame: CGRect.zero, configuration: config)
       wkWebView.navigationDelegate = self
@@ -466,6 +467,7 @@ open class Hub: NSObject {
     }
 
     handlers[method]?[callbackID] = callback
+    connection.runJavaScript("addHandler('\(callbackID)', '\(name)', '\(method)')")
   }
 
   func initialize() {
