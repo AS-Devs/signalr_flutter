@@ -14,6 +14,9 @@ class SignalR {
   final Transport transport;
   final Map<String, String> headers;
 
+  /// List of Hub method names you want to subscribe. Every subsequent message from server gets called on [hubCallback].
+  final List<String> hubMethods;
+
   /// This callback gets called whenever SignalR connection status with server changes.
   final Function(dynamic) statusChangeCallback;
 
@@ -28,6 +31,7 @@ class SignalR {
   SignalR(this.baseUrl, this.hubName,
       {this.queryString,
       this.headers,
+      this.hubMethods,
       this.transport = Transport.Auto,
       this.statusChangeCallback,
       this.hubCallback})
@@ -45,6 +49,7 @@ class SignalR {
         'hubName': hubName,
         'queryString': queryString ?? "",
         'headers': headers ?? {},
+        'hubMethods': hubMethods ?? [],
         'transport': transport.index
       });
 
@@ -85,6 +90,8 @@ class SignalR {
       return Future.error(ex.toString());
     }
   }
+
+  @Deprecated("This method no longer works.")
 
   /// Subscribe to a Hub method. Every subsequent message from server gets called on [hubCallback].
   void subscribeToHubMethod(String methodName) async {

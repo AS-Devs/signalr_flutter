@@ -25,7 +25,9 @@ class _MyAppState extends State<MyApp> {
   // Platform messages are asynchronous, so we initialize in an async method.
   Future<void> initPlatformState() async {
     signalR = SignalR('<Your SignalR Url>', "<Your Hub Name>",
-        statusChangeCallback: _onStatusChange, hubCallback: _onNewMessage);
+        hubMethods: ["<Hub Method Name>"],
+        statusChangeCallback: _onStatusChange,
+        hubCallback: _onNewMessage);
   }
 
   @override
@@ -46,13 +48,6 @@ class _MyAppState extends State<MyApp> {
                 padding: const EdgeInsets.only(top: 20.0),
                 child: RaisedButton(
                     onPressed: _buttonTapped, child: Text("Invoke Method")),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(top: 20.0),
-                child: RaisedButton(
-                    onPressed: () =>
-                        signalR.subscribeToHubMethod("<Your Hub Method Name>"),
-                    child: Text("Listen to Hub Method")),
               )
             ],
           ),
