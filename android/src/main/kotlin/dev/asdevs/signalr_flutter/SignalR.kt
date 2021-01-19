@@ -21,7 +21,7 @@ object SignalR {
     private lateinit var connection: HubConnection
     private lateinit var hub: HubProxy
 
-    fun connectToServer(url: String, hubName: String, queryString: String, headers: Map<String, String>, transport: Int, result: Result) {
+    fun connectToServer(url: String, hubName: String, queryString: String, headers: Map<String, String>, transport: Int, hubMethods: List<String>, result: Result) {
         try {
             connection = if (queryString.isEmpty()) {
                 HubConnection(url)
@@ -37,6 +37,14 @@ object SignalR {
                 connection.credentials = cred
             }
             hub = connection.createHubProxy(hubName)
+
+            hubMethods.forEach { methodName ->
+                hub.on(methodName, { res ->
+                    android.os.Handler(Looper.getMainLooper()).post {
+                        SignalRFlutterPlugin.channel.invokeMethod("NewMessage", listOf(methodName, res))
+                    }
+                }, Any::class.java)
+            }
 
             connection.connected {
                 android.os.Handler(Looper.getMainLooper()).post {

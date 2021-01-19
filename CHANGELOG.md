@@ -32,3 +32,7 @@
 ## 0.0.6-dev.3
 
 * Possible fix for ios Hub events not returning
+
+## 0.1.0-dev.1
+
+* Fix for ios Hub events not returning

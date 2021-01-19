@@ -91,7 +91,7 @@ class SignalR {
     }
   }
 
-  @Deprecated("This method no longer works.")
+  @Deprecated("This method no longer works on iOS. For now it may work on Android but this will be removed later. Consider using constructor parameter [hubMethods]")
 
   /// Subscribe to a Hub method. Every subsequent message from server gets called on [hubCallback].
   void subscribeToHubMethod(String methodName) async {
