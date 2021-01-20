@@ -40,3 +40,11 @@
 ## 0.1.0-dev.2
 
 * Fixed Duplicated Hub events for ios.
+
+## 0.1.0
+
+* Fix a issue where hub callback only accepting strings.
+* Hub callback now returns the message as well as the subscribed method name.
+* Made invokeMethod generic.
+* As many arguments as you want in invokeMethod.
+* fix for ios Hub events not working.
