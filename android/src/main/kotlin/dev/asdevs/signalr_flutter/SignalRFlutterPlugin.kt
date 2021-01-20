@@ -40,9 +40,14 @@ public class SignalRFlutterPlugin : FlutterPlugin, MethodCallHandler {
             CallMethod.ConnectToServer.value -> {
                 val arguments = call.arguments as Map<*, *>
                 @Suppress("UNCHECKED_CAST")
-                SignalR.connectToServer(arguments["baseUrl"] as String, arguments["hubName"] as String, arguments["queryString"] as String,
-                        arguments["headers"] as? Map<String, String>
-                                ?: emptyMap(), arguments["transport"] as Int, result)
+                SignalR.connectToServer(
+                        arguments["baseUrl"] as String,
+                        arguments["hubName"] as String,
+                        arguments["queryString"] as String,
+                        arguments["headers"] as? Map<String, String> ?: emptyMap(),
+                        arguments["transport"] as Int,
+                        arguments["hubMethods"] as? List<String> ?: emptyList(),
+                        result)
             }
             CallMethod.Reconnect.value -> {
                 SignalR.reconnect(result)

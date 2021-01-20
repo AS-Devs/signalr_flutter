@@ -17,7 +17,7 @@ class SignalRWrapper {
   private var hub: Hub!
   private var connection: SignalR!
 
-  func connectToServer(baseUrl: String, hubName: String, transport: Int, queryString : String, headers: [String: String], result: @escaping FlutterResult) {
+  func connectToServer(baseUrl: String, hubName: String, transport: Int, queryString : String, headers: [String: String], hubMethods: [String], result: @escaping FlutterResult) {
     connection = SignalR(baseUrl)
 
     if !queryString.isEmpty {
@@ -36,6 +36,12 @@ class SignalRWrapper {
     }
 
     hub = connection.createHubProxy(hubName)
+
+    hubMethods.forEach { (methodName) in
+      hub.on(methodName) { (args) in
+        SwiftSignalRFlutterPlugin.channel.invokeMethod("NewMessage", arguments: [methodName, args?[0]])
+      }
+    }
 
     connection.starting = { [weak self] in
       print("SignalR Connecting. Current Status: \(String(describing: self?.connection.state.stringValue))")
@@ -101,7 +107,7 @@ class SignalRWrapper {
   func listenToHubMethod(methodName : String, result: @escaping FlutterResult) {
     if let hub = self.hub {
       hub.on(methodName) { (args) in
-        SwiftSignalRFlutterPlugin.channel.invokeMethod("NewMessage", arguments: args?[0])
+        SwiftSignalRFlutterPlugin.channel.invokeMethod("NewMessage", arguments: [methodName, args?[0]])
       }
     } else {
       result(FlutterError(code: "Error", message: "SignalR Connection not found or null", details: "Connect SignalR before listening a Hub method"))

@@ -24,9 +24,10 @@ class _MyAppState extends State<MyApp> {
 
   // Platform messages are asynchronous, so we initialize in an async method.
   Future<void> initPlatformState() async {
-    signalR = SignalR(
-        '<Your url here>', "<Your hubname here>",
-        statusChangeCallback: _onStatusChange, hubCallback: _onNewMessage);
+    signalR = SignalR('<Your SignalR Url>', "<Your Hub Name>",
+        hubMethods: ["<Hub Method Name>"],
+        statusChangeCallback: _onStatusChange,
+        hubCallback: _onNewMessage);
   }
 
   @override
@@ -47,12 +48,6 @@ class _MyAppState extends State<MyApp> {
                 padding: const EdgeInsets.only(top: 20.0),
                 child: RaisedButton(
                     onPressed: _buttonTapped, child: Text("Invoke Method")),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(top: 20.0),
-                child: RaisedButton(
-                    onPressed: () => signalR.subscribeToHubMethod("methodName"),
-                    child: Text("Listen to Hub Method")),
               )
             ],
           ),
@@ -67,25 +62,24 @@ class _MyAppState extends State<MyApp> {
     );
   }
 
-  _onStatusChange(String status) {
+  _onStatusChange(dynamic status) {
     if (mounted) {
       setState(() {
-        _signalRStatus = status;
+        _signalRStatus = status as String;
       });
     }
   }
 
-  _onNewMessage(dynamic message) {
-    print(message);
+  _onNewMessage(String methodName, dynamic message) {
+    print('MethodName = $methodName, Message = $message');
   }
 
   _buttonTapped() async {
-    final res = await signalR
-        .invokeMethod("<Your methodname here>", arguments: ['<Your arguments here>']).catchError((error) {
-          print(error.toString());
-        });
-    final snackBar =
-        SnackBar(content: Text('SignalR Method Response: ${res.toString()}'));
+    final res = await signalR.invokeMethod<dynamic>("<Your Method Name>",
+        arguments: ["<Your Method Arguments>"]).catchError((error) {
+      print(error.toString());
+    });
+    final snackBar = SnackBar(content: Text('SignalR Method Response: $res'));
     _scaffoldKey.currentState.showSnackBar(snackBar);
   }
 }

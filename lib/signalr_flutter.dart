@@ -14,11 +14,14 @@ class SignalR {
   final Transport transport;
   final Map<String, String> headers;
 
+  /// List of Hub method names you want to subscribe. Every subsequent message from server gets called on [hubCallback].
+  final List<String> hubMethods;
+
   /// This callback gets called whenever SignalR connection status with server changes.
-  final Function(String) statusChangeCallback;
+  final Function(dynamic) statusChangeCallback;
 
   /// This callback gets called whenever SignalR server sends some message to client.
-  final Function(dynamic) hubCallback;
+  final Function(String, dynamic) hubCallback;
 
   static const MethodChannel _channel = const MethodChannel('signalR');
 
@@ -28,6 +31,7 @@ class SignalR {
   SignalR(this.baseUrl, this.hubName,
       {this.queryString,
       this.headers,
+      this.hubMethods,
       this.transport = Transport.Auto,
       this.statusChangeCallback,
       this.hubCallback})
@@ -45,6 +49,7 @@ class SignalR {
         'hubName': hubName,
         'queryString': queryString ?? "",
         'headers': headers ?? {},
+        'hubMethods': hubMethods ?? [],
         'transport': transport.index
       });
 
@@ -86,9 +91,13 @@ class SignalR {
     }
   }
 
+  @Deprecated(
+      "This method no longer works on iOS. For now it may work on Android but this will be removed later. Consider using constructor parameter [hubMethods]")
+
   /// Subscribe to a Hub method. Every subsequent message from server gets called on [hubCallback].
   void subscribeToHubMethod(String methodName) async {
     try {
+      assert(methodName != null, "methodName can not be null.");
       await _channel.invokeMethod("listenToHubMethod", methodName);
     } on PlatformException catch (ex) {
       print("Platform Error: ${ex.message}");
@@ -101,14 +110,12 @@ class SignalR {
 
   /// Invoke any server method with optional [arguments].
   ///
-  /// [arguments] can have maximum of 5 elements in it.
-  Future invokeMethod(String methodName, {List<dynamic> arguments}) async {
+  /// [arguments] can have maximum of 10 elements in it.
+  Future<T> invokeMethod<T>(String methodName,
+      {List<dynamic> arguments}) async {
     try {
-      if ((arguments?.length ?? 0) > 5)
-        throw Exception(
-            "arguments list can have maximum of 5 elements. You have ${arguments.length} elements in arguments list.");
-
-      final result = await _channel.invokeMethod(
+      assert(methodName != null, "methodName can not be null.");
+      final result = await _channel.invokeMethod<T>(
           "invokeServerMethod", <String, dynamic>{
         'methodName': methodName,
         'arguments': arguments ?? List.empty()
@@ -131,7 +138,11 @@ class SignalR {
           statusChangeCallback(call.arguments);
           break;
         case NEW_MESSAGE:
-          hubCallback(call.arguments);
+          if (call.arguments is List) {
+            hubCallback(call.arguments[0], call.arguments[1]);
+          } else {
+            hubCallback("", call.arguments);
+          }
           break;
         default:
       }

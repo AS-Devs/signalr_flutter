@@ -21,7 +21,7 @@ object SignalR {
     private lateinit var connection: HubConnection
     private lateinit var hub: HubProxy
 
-    fun connectToServer(url: String, hubName: String, queryString: String, headers: Map<String, String>, transport: Int, result: Result) {
+    fun connectToServer(url: String, hubName: String, queryString: String, headers: Map<String, String>, transport: Int, hubMethods: List<String>, result: Result) {
         try {
             connection = if (queryString.isEmpty()) {
                 HubConnection(url)
@@ -37,6 +37,14 @@ object SignalR {
                 connection.credentials = cred
             }
             hub = connection.createHubProxy(hubName)
+
+            hubMethods.forEach { methodName ->
+                hub.on(methodName, { res ->
+                    android.os.Handler(Looper.getMainLooper()).post {
+                        SignalRFlutterPlugin.channel.invokeMethod("NewMessage", listOf(methodName, res))
+                    }
+                }, Any::class.java)
+            }
 
             connection.connected {
                 android.os.Handler(Looper.getMainLooper()).post {
@@ -106,11 +114,11 @@ object SignalR {
 
     fun listenToHubMethod(methodName: String, result: Result) {
         try {
-            hub.on<String>(methodName, { res ->
+            hub.on(methodName, { res ->
                 android.os.Handler(Looper.getMainLooper()).post {
-                    SignalRFlutterPlugin.channel.invokeMethod("NewMessage", res)
+                    SignalRFlutterPlugin.channel.invokeMethod("NewMessage", listOf(methodName, res))
                 }
-            }, String::class.java)
+            }, Any::class.java)
         } catch (ex: Exception) {
             result.error("Error", ex.localizedMessage, null)
         }
@@ -118,15 +126,7 @@ object SignalR {
 
     fun invokeServerMethod(methodName: String, args: List<Any>, result: Result) {
         try {
-            val res: SignalRFuture<Any> = when (args.count()) {
-                0 -> hub.invoke(Any::class.java, methodName)
-                1 -> hub.invoke(Any::class.java, methodName, args[0])
-                2 -> hub.invoke(Any::class.java, methodName, args[0], args[1])
-                3 -> hub.invoke(Any::class.java, methodName, args[0], args[1], args[2])
-                4 -> hub.invoke(Any::class.java, methodName, args[0], args[1], args[2], args[3])
-                5 -> hub.invoke(Any::class.java, methodName, args[0], args[1], args[2], args[3], args[4])
-                else -> throw Exception("Maximum 5 arguments supported. Your arguments List count is ${args.count()}.")
-            }
+            val res: SignalRFuture<Any> = hub.invoke(Any::class.java, methodName, *args.toTypedArray())
 
             res.done { msg: Any? ->
                 android.os.Handler(Looper.getMainLooper()).post {
