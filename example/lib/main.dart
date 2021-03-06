@@ -13,8 +13,8 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   String _signalRStatus = 'Unknown';
-  SignalR signalR;
-  final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
+  late SignalR signalR;
+  final GlobalKey<ScaffoldMessengerState> rootScaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
 
   @override
   void initState() {
@@ -33,8 +33,8 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      scaffoldMessengerKey: rootScaffoldMessengerKey,
       home: Scaffold(
-        key: _scaffoldKey,
         appBar: AppBar(
           title: const Text('SignalR Plugin Example App'),
         ),
@@ -46,7 +46,7 @@ class _MyAppState extends State<MyApp> {
                   style: Theme.of(context).textTheme.headline5),
               Padding(
                 padding: const EdgeInsets.only(top: 20.0),
-                child: RaisedButton(
+                child: ElevatedButton(
                     onPressed: _buttonTapped, child: Text("Invoke Method")),
               )
             ],
@@ -70,7 +70,7 @@ class _MyAppState extends State<MyApp> {
     }
   }
 
-  _onNewMessage(String methodName, dynamic message) {
+  _onNewMessage(String? methodName, dynamic message) {
     print('MethodName = $methodName, Message = $message');
   }
 
@@ -80,6 +80,6 @@ class _MyAppState extends State<MyApp> {
       print(error.toString());
     });
     final snackBar = SnackBar(content: Text('SignalR Method Response: $res'));
-    _scaffoldKey.currentState.showSnackBar(snackBar);
+    rootScaffoldMessengerKey.currentState!.showSnackBar(snackBar);
   }
 }
