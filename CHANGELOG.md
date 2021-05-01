@@ -48,3 +48,7 @@
 * Made invokeMethod generic.
 * As many arguments as you want in invokeMethod.
 * fix for ios Hub events not working.
+
+## 0.1.1
+
+* Null Safety Support
