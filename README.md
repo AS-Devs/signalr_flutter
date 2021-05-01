@@ -41,6 +41,10 @@ If you are trying to connect with a HTTP url, then you need to add the following
 
 This is because of the [Network Security Config](https://developer.android.com/training/articles/security-config#CleartextTrafficPermitted).
 
+R8 may strip away some SignalR classes for the Android in Release Builds. Add the following line in your `proguard-rules.pro` file to solve this issue.
+
+`-keep class microsoft.aspnet.signalr.client.hubs.** { *; }`
+
 
 For more info check example.
 
