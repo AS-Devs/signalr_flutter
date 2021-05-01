@@ -13,7 +13,6 @@ void main() async {
       switch (methodCall.method) {
         case "connectToServer":
           return true;
-          break;
         case "invokeServerMethod":
           return <String, dynamic>{
             'baseUrl': "123",
