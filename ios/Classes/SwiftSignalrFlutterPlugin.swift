@@ -33,6 +33,10 @@ public class SwiftSignalRFlutterPlugin: NSObject, FlutterPlugin {
       SignalRWrapper.instance.stop(result: result)
       break
 
+    case CallMethod.isConnected.rawValue:
+      SignalRWrapper.instance.isConnected(result: result)
+      break
+
     case CallMethod.listenToHubMethod.rawValue:
       let methodName = call.arguments as! String
       SignalRWrapper.instance.listenToHubMethod(methodName: methodName, result: result)
