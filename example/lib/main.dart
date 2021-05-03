@@ -14,7 +14,8 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   String _signalRStatus = 'Unknown';
   late SignalR signalR;
-  final GlobalKey<ScaffoldMessengerState> rootScaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
+  final GlobalKey<ScaffoldMessengerState> rootScaffoldMessengerKey =
+      GlobalKey<ScaffoldMessengerState>();
 
   @override
   void initState() {
@@ -24,8 +25,10 @@ class _MyAppState extends State<MyApp> {
 
   // Platform messages are asynchronous, so we initialize in an async method.
   Future<void> initPlatformState() async {
-    signalR = SignalR('<Your SignalR Url>', "<Your Hub Name>",
-        hubMethods: ["<Hub Method Name>"],
+    signalR = SignalR(
+        'https://service11.carchat24.com:443/cc24realtime',
+        "consolehub",
+        hubMethods: [],
         statusChangeCallback: _onStatusChange,
         hubCallback: _onNewMessage);
   }
@@ -55,7 +58,12 @@ class _MyAppState extends State<MyApp> {
         floatingActionButton: FloatingActionButton(
           child: Icon(Icons.cast_connected),
           onPressed: () async {
-            await signalR.connect();
+            final isConnected = await signalR.isConnected ?? false;
+            if (!isConnected) {
+              await signalR.connect();
+            } else {
+              signalR.stop();
+            }
           },
         ),
       ),

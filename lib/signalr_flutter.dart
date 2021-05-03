@@ -91,6 +91,18 @@ class SignalR {
     }
   }
 
+  Future<bool?> get isConnected async {
+    try {
+      return await _channel.invokeMethod<bool>("isConnected");
+    } on PlatformException catch (ex) {
+      print("Platform Error: ${ex.message}");
+      return Future.error(ex.message!);
+    } on Exception catch (ex) {
+      print("Error: ${ex.toString()}");
+      return Future.error(ex.toString());
+    }
+  }
+
   @Deprecated(
       "This method no longer works on iOS. For now it may work on Android but this will be removed later. Consider using constructor parameter [hubMethods]")
 

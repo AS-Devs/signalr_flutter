@@ -55,6 +55,9 @@ public class SignalRFlutterPlugin : FlutterPlugin, MethodCallHandler {
             CallMethod.Stop.value -> {
                 SignalR.stop(result)
             }
+            CallMethod.IsConnected.value -> {
+                SignalR.isConnected(result)
+            }
             CallMethod.ListenToHubMethod.value -> {
                 if (call.arguments is String) {
                     val methodName = call.arguments as String

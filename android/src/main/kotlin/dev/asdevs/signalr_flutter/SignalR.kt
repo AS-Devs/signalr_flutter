@@ -3,10 +3,7 @@ package dev.asdevs.signalr_flutter
 import android.os.Handler
 import android.os.Looper
 import io.flutter.plugin.common.MethodChannel.Result
-import microsoft.aspnet.signalr.client.Credentials
-import microsoft.aspnet.signalr.client.LogLevel
-import microsoft.aspnet.signalr.client.Logger
-import microsoft.aspnet.signalr.client.SignalRFuture
+import microsoft.aspnet.signalr.client.*
 import microsoft.aspnet.signalr.client.hubs.HubConnection
 import microsoft.aspnet.signalr.client.hubs.HubProxy
 import microsoft.aspnet.signalr.client.transport.LongPollingTransport
@@ -16,6 +13,7 @@ enum class CallMethod(val value: String) {
     ConnectToServer("connectToServer"),
     Reconnect("reconnect"),
     Stop("stop"),
+    IsConnected("isConnected"),
     ListenToHubMethod("listenToHubMethod"),
     InvokeServerMethod("invokeServerMethod")
 }
@@ -112,6 +110,21 @@ object SignalR {
             connection.stop()
         } catch (ex: Exception) {
             result.error(ex.localizedMessage, ex.stackTrace.toString(), null)
+        }
+    }
+
+    fun isConnected(result: Result) {
+        try {
+            if (this::connection.isInitialized) {
+                when (connection.state) {
+                    ConnectionState.Connected -> result.success(true)
+                    else -> result.success(false)
+                }
+            } else {
+                result.success(false)
+            }
+        } catch (ex: Exception) {
+            result.error("Error", ex.localizedMessage, null)
         }
     }
 
