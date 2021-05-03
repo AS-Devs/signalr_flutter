@@ -8,7 +8,7 @@
 import Foundation
 
 enum CallMethod : String {
-  case connectToServer, reconnect, stop, invokeServerMethod, listenToHubMethod
+  case connectToServer, reconnect, stop, isConnected, invokeServerMethod, listenToHubMethod
 }
 
 class SignalRWrapper {
@@ -101,6 +101,19 @@ class SignalRWrapper {
       connection.stop()
     } else {
       result(FlutterError(code: "Error", message: "SignalR Connection not found or null", details: "Start SignalR connection first"))
+    }
+  }
+
+  func isConnected(result: @escaping FlutterResult) {
+    if let connection = self.connection {
+      switch connection.state {
+      case .connected:
+        result(true)
+      default:
+        result(false)
+      }
+    } else {
+      result(false)
     }
   }
 

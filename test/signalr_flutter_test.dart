@@ -13,7 +13,6 @@ void main() async {
       switch (methodCall.method) {
         case "connectToServer":
           return true;
-          break;
         case "invokeServerMethod":
           return <String, dynamic>{
             'baseUrl': "123",
@@ -21,9 +20,7 @@ void main() async {
           };
         default:
           return PlatformException(
-              code: "Error",
-              message:
-                  "No implementation found for method ${methodCall.method}");
+              code: "Error", message: "No implementation found for method ${methodCall.method}");
       }
     });
   });
@@ -47,4 +44,3 @@ void main() async {
     });
   });
 }
-
