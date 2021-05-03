@@ -26,9 +26,9 @@ class _MyAppState extends State<MyApp> {
   // Platform messages are asynchronous, so we initialize in an async method.
   Future<void> initPlatformState() async {
     signalR = SignalR(
-        'https://service11.carchat24.com:443/cc24realtime',
-        "consolehub",
-        hubMethods: [],
+        '<Your server url here>',
+        "<Your hub name here>",
+        hubMethods: ["<Your Hub Method Names>"],
         statusChangeCallback: _onStatusChange,
         hubCallback: _onNewMessage);
   }

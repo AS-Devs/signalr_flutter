@@ -52,3 +52,7 @@
 ## 0.1.1
 
 * Null Safety Support
+
+## 0.1.2
+
+* IsConnected Method Added
