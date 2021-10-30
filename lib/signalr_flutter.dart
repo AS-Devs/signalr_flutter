@@ -1,13 +1,16 @@
 
 import 'dart:async';
 
-import 'package:flutter/services.dart';
+import 'package:signalr_flutter/signalr_api.dart';
 
-class SignalrFlutter {
-  static const MethodChannel _channel = MethodChannel('signalr_flutter');
+class SignalrFlutter implements SignalRPlatformApi {
+  @override
+  Future<void> onNewMessage(String hubName, String message) {
+    throw UnimplementedError();
+  }
 
-  static Future<String?> get platformVersion async {
-    final String? version = await _channel.invokeMethod('getPlatformVersion');
-    return version;
+  @override
+  Future<void> onStatusChange(StatusChangeResult statusChangeResult) {
+    throw UnimplementedError();
   }
 }
