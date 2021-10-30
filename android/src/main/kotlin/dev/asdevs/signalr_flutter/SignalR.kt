@@ -49,37 +49,37 @@ object SignalR {
 
             connection.connected {
                 Handler(Looper.getMainLooper()).post {
-                    SignalRFlutterPlugin.channel.invokeMethod("ConnectionStatus", connection.state.name)
+                    SignalRFlutterPlugin.channel.invokeMethod("ConnectionStatus", listOf(connection.state.name, connection.connectionId, null))
                 }
             }
 
             connection.reconnected {
                 Handler(Looper.getMainLooper()).post {
-                    SignalRFlutterPlugin.channel.invokeMethod("ConnectionStatus", connection.state.name)
+                    SignalRFlutterPlugin.channel.invokeMethod("ConnectionStatus", listOf(connection.state.name, connection.connectionId, null))
                 }
             }
 
             connection.reconnecting {
                 Handler(Looper.getMainLooper()).post {
-                    SignalRFlutterPlugin.channel.invokeMethod("ConnectionStatus", connection.state.name)
+                    SignalRFlutterPlugin.channel.invokeMethod("ConnectionStatus", listOf(connection.state.name, connection.connectionId, null))
                 }
             }
 
             connection.closed {
                 Handler(Looper.getMainLooper()).post {
-                    SignalRFlutterPlugin.channel.invokeMethod("ConnectionStatus", connection.state.name)
+                    SignalRFlutterPlugin.channel.invokeMethod("ConnectionStatus", listOf(connection.state.name, null, null))
                 }
             }
 
             connection.connectionSlow {
                 Handler(Looper.getMainLooper()).post {
-                    SignalRFlutterPlugin.channel.invokeMethod("ConnectionStatus", "Slow")
+                    SignalRFlutterPlugin.channel.invokeMethod("ConnectionStatus", listOf("ConnectionSlow", connection.connectionId, null))
                 }
             }
 
             connection.error { handler ->
                 Handler(Looper.getMainLooper()).post {
-                    SignalRFlutterPlugin.channel.invokeMethod("ConnectionStatus", handler.localizedMessage)
+                    SignalRFlutterPlugin.channel.invokeMethod("ConnectionStatus", listOf("ConnectionError", null, handler.localizedMessage))
                 }
             }
 
@@ -91,7 +91,7 @@ object SignalR {
                 }
             }
 
-            result.success(true)
+            result.success(connection.connectionId)
         } catch (ex: Exception) {
             result.error("Error", ex.localizedMessage, null)
         }
@@ -100,6 +100,7 @@ object SignalR {
     fun reconnect(result: Result) {
         try {
             connection.start()
+            result.success(connection.connectionId)
         } catch (ex: Exception) {
             result.error(ex.localizedMessage, ex.stackTrace.toString(), null)
         }

@@ -70,10 +70,10 @@ class _MyAppState extends State<MyApp> {
     );
   }
 
-  _onStatusChange(dynamic status) {
+  _onStatusChange(ConnectionStatus status) {
     if (mounted) {
       setState(() {
-        _signalRStatus = status as String;
+        _signalRStatus = status.name;
       });
     }
   }
