@@ -1,21 +1,22 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
+
+import 'package:flutter/services.dart';
 import 'package:signalr_flutter/signalr_flutter.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatefulWidget {
+  const MyApp({Key? key}) : super(key: key);
+
   @override
-  _MyAppState createState() => _MyAppState();
+  State<MyApp> createState() => _MyAppState();
 }
 
 class _MyAppState extends State<MyApp> {
-  String _signalRStatus = 'Unknown';
-  late SignalR signalR;
-  final GlobalKey<ScaffoldMessengerState> rootScaffoldMessengerKey =
-      GlobalKey<ScaffoldMessengerState>();
+  String _platformVersion = 'Unknown';
 
   @override
   void initState() {
@@ -25,69 +26,37 @@ class _MyAppState extends State<MyApp> {
 
   // Platform messages are asynchronous, so we initialize in an async method.
   Future<void> initPlatformState() async {
-    signalR = SignalR(
-        '<Your server url here>',
-        "<Your hub name here>",
-        hubMethods: ["<Your Hub Method Names>"],
-        statusChangeCallback: _onStatusChange,
-        hubCallback: _onNewMessage);
+    String platformVersion;
+    // Platform messages may fail, so we use a try/catch PlatformException.
+    // We also handle the message potentially returning null.
+    try {
+      platformVersion =
+          await SignalrFlutter.platformVersion ?? 'Unknown platform version';
+    } on PlatformException {
+      platformVersion = 'Failed to get platform version.';
+    }
+
+    // If the widget was removed from the tree while the asynchronous platform
+    // message was in flight, we want to discard the reply rather than calling
+    // setState to update our non-existent appearance.
+    if (!mounted) return;
+
+    setState(() {
+      _platformVersion = platformVersion;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      scaffoldMessengerKey: rootScaffoldMessengerKey,
       home: Scaffold(
         appBar: AppBar(
-          title: const Text('SignalR Plugin Example App'),
+          title: const Text('Plugin example app'),
         ),
         body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              Text('Connection Status: $_signalRStatus\n',
-                  style: Theme.of(context).textTheme.headline5),
-              Padding(
-                padding: const EdgeInsets.only(top: 20.0),
-                child: ElevatedButton(
-                    onPressed: _buttonTapped, child: Text("Invoke Method")),
-              )
-            ],
-          ),
-        ),
-        floatingActionButton: FloatingActionButton(
-          child: Icon(Icons.cast_connected),
-          onPressed: () async {
-            final isConnected = await signalR.isConnected ?? false;
-            if (!isConnected) {
-              await signalR.connect();
-            } else {
-              signalR.stop();
-            }
-          },
+          child: Text('Running on: $_platformVersion\n'),
         ),
       ),
     );
-  }
-
-  _onStatusChange(ConnectionStatus status) {
-    if (mounted) {
-      setState(() {
-        _signalRStatus = status.name;
-      });
-    }
-  }
-
-  _onNewMessage(String? methodName, dynamic message) {
-    print('MethodName = $methodName, Message = $message');
-  }
-
-  _buttonTapped() async {
-    final res = await signalR.invokeMethod<dynamic>("<Your Method Name>",
-        arguments: ["<Your Method Arguments>"]).catchError((error) {
-      print(error.toString());
-    });
-    final snackBar = SnackBar(content: Text('SignalR Method Response: $res'));
-    rootScaffoldMessengerKey.currentState!.showSnackBar(snackBar);
   }
 }

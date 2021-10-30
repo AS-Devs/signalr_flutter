@@ -1,51 +1,15 @@
 # signalr_flutter
 
-A flutter plugin for .net SignalR client.
+A new flutter plugin project.
 
-## Usage
+## Getting Started
 
-First of all, Initialize SignalR and connect to your server.
+This project is a starting point for a Flutter
+[plug-in package](https://flutter.dev/developing-packages/),
+a specialized package that includes platform-specific implementation code for
+Android and/or iOS.
 
-```dart
-SignalR signalR = SignalR(
-        '<Your server url here>',
-        "<Your hub name here>",
-        hubMethods: ["<Your Hub Method Names>"]
-        statusChangeCallback: (status) => print(status),
-        hubCallback: (methodName, message) => print('MethodName = $methodName, Message = $message'));
-signalR.connect();
-```
+For help getting started with Flutter, view our
+[online documentation](https://flutter.dev/docs), which offers tutorials,
+samples, guidance on mobile development, and a full API reference.
 
-Here `statusChangeCallback` will get called whenever connection status with server changes.
-
-`hubCallback` will receive calls from the server if you subscribe to any hub method. You can do that with `hubMethods`.
-
-`hubMethods` are the hub method names you want to subscribe.
-
-There is a `headers` parameters also which takes a `Map<String, String>`.
-
-You can also invoke any server method.
-
-```dart
-signalR.invokeMethod("<Your method name here>", arguments: ["argument1", "argument2"]);
-```
-
-
-If you are trying to connect with a HTTP url, then you need to add the following lines to the manifest of your android project.
-
-```xml
-<application
-        android:usesCleartextTraffic="true">
-</application>
-```
-
-This is because of the [Network Security Config](https://developer.android.com/training/articles/security-config#CleartextTrafficPermitted).
-
-R8 may strip away some SignalR classes for the Android in Release Builds. Add the following line in your `proguard-rules.pro` file to solve this issue.
-
-`-keep class microsoft.aspnet.signalr.client.hubs.** { *; }`
-
-
-For more info check example.
-
-Any issue or PR is always welcome.
