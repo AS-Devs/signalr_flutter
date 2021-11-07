@@ -19,10 +19,10 @@ class SignalR implements SignalRPlatformApi, SignalrPlatformInterface {
   final List<String>? hubMethods;
 
   /// This callback gets called whenever SignalR connection status with server changes.
-  final Function(ConnectionStatus?)? statusChangeCallback;
+  final void Function(ConnectionStatus?)? statusChangeCallback;
 
   /// This callback gets called whenever SignalR server sends some message to client.
-  final Function(String, String)? hubCallback;
+  final void Function(String, String)? hubCallback;
 
   // Private variables
   static late final SignalRHostApi _signalrApi = SignalRHostApi();
@@ -72,6 +72,9 @@ class SignalR implements SignalRPlatformApi, SignalrPlatformInterface {
       options.hubMethods = hubMethods;
       options.headers = headers;
       options.transport = transport;
+
+      // Register SignalR Callbacks
+      SignalRPlatformApi.setup(this);
 
       connectionId = await _signalrApi.connect(options);
 

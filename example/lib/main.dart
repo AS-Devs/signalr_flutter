@@ -1,7 +1,11 @@
+// ignore_for_file: avoid_print
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 
-import 'package:flutter/services.dart';
+import 'package:signalr_flutter/signalr_api.dart';
+import 'package:signalr_flutter/signalr_flutter.dart';
 
 void main() {
   runApp(const MyApp());
@@ -15,7 +19,8 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  String _platformVersion = 'Unknown';
+  String signalRStatus = "disconnected";
+  late SignalR signalR;
 
   @override
   void initState() {
@@ -25,19 +30,13 @@ class _MyAppState extends State<MyApp> {
 
   // Platform messages are asynchronous, so we initialize in an async method.
   Future<void> initPlatformState() async {
-    String platformVersion;
-    // Platform messages may fail, so we use a try/catch PlatformException.
-    // We also handle the message potentially returning null.
-    try {} on PlatformException {
-      platformVersion = 'Failed to get platform version.';
-    }
-
-    // If the widget was removed from the tree while the asynchronous platform
-    // message was in flight, we want to discard the reply rather than calling
-    // setState to update our non-existent appearance.
-    if (!mounted) return;
-
-    setState(() {});
+    signalR = SignalR(
+      "<Your server url here>",
+      "<Your hub name here>",
+      hubMethods: ["<Your Hub Method Names>"],
+      statusChangeCallback: _onStatusChange,
+      hubCallback: _onNewMessage,
+    );
   }
 
   @override
@@ -45,12 +44,51 @@ class _MyAppState extends State<MyApp> {
     return MaterialApp(
       home: Scaffold(
         appBar: AppBar(
-          title: const Text('Plugin example app'),
+          title: const Text("SignalR Plugin Example App"),
         ),
         body: Center(
-          child: Text('Running on: $_platformVersion\n'),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              Text("Connection Status: $signalRStatus\n",
+                  style: Theme.of(context).textTheme.headline5),
+              Padding(
+                padding: const EdgeInsets.only(top: 20.0),
+                child: ElevatedButton(onPressed: _buttonTapped, child: const Text("Invoke Method")),
+              )
+            ],
+          ),
+        ),
+        floatingActionButton: FloatingActionButton(
+          child: const Icon(Icons.cast_connected),
+          onPressed: () async {
+            final isConnected = await signalR.isConnected();
+            if (!isConnected) {
+              final connId = await signalR.connect();
+              print("Connection ID: $connId");
+            } else {
+              signalR.stop();
+            }
+          },
         ),
       ),
     );
+  }
+
+  void _onStatusChange(ConnectionStatus? status) {
+    if (mounted) {
+      setState(() {
+        signalRStatus = describeEnum(status ?? ConnectionStatus.disconnected);
+      });
+    }
+  }
+
+  void _onNewMessage(String methodName, String message) {
+    print("MethodName = $methodName, Message = $message");
+  }
+
+  void _buttonTapped() async {
+    final result = await signalR.invokeMethod("<Your Method Name>", arguments: ["<Your Method Arguments>"]);
+    print(result);
   }
 }

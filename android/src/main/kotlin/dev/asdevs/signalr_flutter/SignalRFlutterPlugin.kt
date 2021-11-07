@@ -50,7 +50,7 @@ class SignalrFlutterPlugin : FlutterPlugin, SignalrApi.SignalRHostApi {
                     HubConnection(connectionOptions.baseUrl)
                 }
 
-            if (connectionOptions.headers.isNotEmpty()) {
+            if (connectionOptions.headers != null && connectionOptions.headers.isNotEmpty()) {
                 val cred = Credentials { request ->
                     request.headers = connectionOptions.headers
                 }
@@ -62,7 +62,7 @@ class SignalrFlutterPlugin : FlutterPlugin, SignalrApi.SignalRHostApi {
             connectionOptions.hubMethods.forEach { methodName ->
                 hub.on(methodName, { res ->
                     Handler(Looper.getMainLooper()).post {
-                        signalrApi.onNewMessage(methodName, res, null)
+                        signalrApi.onNewMessage(methodName, res) { }
                     }
                 }, String::class.java)
             }
@@ -72,7 +72,7 @@ class SignalrFlutterPlugin : FlutterPlugin, SignalrApi.SignalRHostApi {
                     val statusChangeResult = SignalrApi.StatusChangeResult()
                     statusChangeResult.connectionId = connection.connectionId
                     statusChangeResult.status = SignalrApi.ConnectionStatus.connected
-                    signalrApi.onStatusChange(statusChangeResult, null)
+                    signalrApi.onStatusChange(statusChangeResult) { }
                 }
             }
 
@@ -81,7 +81,7 @@ class SignalrFlutterPlugin : FlutterPlugin, SignalrApi.SignalRHostApi {
                     val statusChangeResult = SignalrApi.StatusChangeResult()
                     statusChangeResult.connectionId = connection.connectionId
                     statusChangeResult.status = SignalrApi.ConnectionStatus.connected
-                    signalrApi.onStatusChange(statusChangeResult, null)
+                    signalrApi.onStatusChange(statusChangeResult) { }
                 }
             }
 
@@ -90,7 +90,7 @@ class SignalrFlutterPlugin : FlutterPlugin, SignalrApi.SignalRHostApi {
                     val statusChangeResult = SignalrApi.StatusChangeResult()
                     statusChangeResult.connectionId = connection.connectionId
                     statusChangeResult.status = SignalrApi.ConnectionStatus.reconnecting
-                    signalrApi.onStatusChange(statusChangeResult, null)
+                    signalrApi.onStatusChange(statusChangeResult) { }
                 }
             }
 
@@ -99,7 +99,7 @@ class SignalrFlutterPlugin : FlutterPlugin, SignalrApi.SignalRHostApi {
                     val statusChangeResult = SignalrApi.StatusChangeResult()
                     statusChangeResult.connectionId = connection.connectionId
                     statusChangeResult.status = SignalrApi.ConnectionStatus.disconnected
-                    signalrApi.onStatusChange(statusChangeResult, null)
+                    signalrApi.onStatusChange(statusChangeResult) { }
                 }
             }
 
@@ -108,7 +108,7 @@ class SignalrFlutterPlugin : FlutterPlugin, SignalrApi.SignalRHostApi {
                     val statusChangeResult = SignalrApi.StatusChangeResult()
                     statusChangeResult.connectionId = connection.connectionId
                     statusChangeResult.status = SignalrApi.ConnectionStatus.connectionSlow
-                    signalrApi.onStatusChange(statusChangeResult, null)
+                    signalrApi.onStatusChange(statusChangeResult) { }
                 }
             }
 
@@ -117,7 +117,7 @@ class SignalrFlutterPlugin : FlutterPlugin, SignalrApi.SignalRHostApi {
                     val statusChangeResult = SignalrApi.StatusChangeResult()
                     statusChangeResult.status = SignalrApi.ConnectionStatus.connectionError
                     statusChangeResult.errorMessage = handler.localizedMessage
-                    signalrApi.onStatusChange(statusChangeResult, null)
+                    signalrApi.onStatusChange(statusChangeResult) { }
                 }
             }
 
@@ -133,7 +133,7 @@ class SignalrFlutterPlugin : FlutterPlugin, SignalrApi.SignalRHostApi {
                 }
             }
 
-            result?.success(connection.connectionId)
+            result?.success(connection.connectionId ?: "")
         } catch (ex: Exception) {
             result?.error(ex)
         }
@@ -142,7 +142,7 @@ class SignalrFlutterPlugin : FlutterPlugin, SignalrApi.SignalRHostApi {
     override fun reconnect(result: SignalrApi.Result<String>?) {
         try {
             connection.start()
-            result?.success(connection.connectionId)
+            result?.success(connection.connectionId ?: "")
         } catch (ex: Exception) {
             result?.error(ex)
         }
