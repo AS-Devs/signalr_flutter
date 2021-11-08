@@ -51,7 +51,7 @@ class _MyAppState extends State<MyApp> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
               Text("Connection Status: $signalRStatus\n",
-                  style: Theme.of(context).textTheme.headline5),
+                  style: Theme.of(context).textTheme.headline6),
               Padding(
                 padding: const EdgeInsets.only(top: 20.0),
                 child: ElevatedButton(onPressed: _buttonTapped, child: const Text("Invoke Method")),
@@ -88,7 +88,12 @@ class _MyAppState extends State<MyApp> {
   }
 
   void _buttonTapped() async {
-    final result = await signalR.invokeMethod("<Your Method Name>", arguments: ["<Your Method Arguments>"]);
-    print(result);
+    try {
+      final result =
+          await signalR.invokeMethod("<Your Method Name>", arguments: ["<Your Method Arguments>"]);
+      print(result);
+    } catch (e) {
+      print(e);
+    }
   }
 }

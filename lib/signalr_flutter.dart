@@ -4,38 +4,26 @@ import 'package:flutter/services.dart';
 import 'package:signalr_flutter/signalr_api.dart';
 import 'package:signalr_flutter/signalr_platform_interface.dart';
 
-class SignalR implements SignalRPlatformApi, SignalrPlatformInterface {
-  final String baseUrl;
-  final String? queryString;
-  final String hubName;
-
-  /// [Transport.Auto] is default.
-  final Transport transport;
-  final Map<String, String>? headers;
-
-  String? connectionId;
-
-  /// List of Hub method names you want to subscribe. Every subsequent message from server gets called on [hubCallback].
-  final List<String>? hubMethods;
-
-  /// This callback gets called whenever SignalR connection status with server changes.
-  final void Function(ConnectionStatus?)? statusChangeCallback;
-
-  /// This callback gets called whenever SignalR server sends some message to client.
-  final void Function(String, String)? hubCallback;
-
+class SignalR extends SignalrPlatformInterface implements SignalRPlatformApi {
   // Private variables
   static late final SignalRHostApi _signalrApi = SignalRHostApi();
 
-  SignalR(this.baseUrl, this.hubName,
-      {this.queryString,
-      this.headers,
-      this.hubMethods,
-      this.transport = Transport.auto,
-      this.statusChangeCallback,
-      this.hubCallback})
-      : assert(baseUrl != ''),
-        assert(hubName != '');
+  // Constructor
+  SignalR(
+    String baseUrl,
+    String hubName, {
+    String? queryString,
+    Map<String, String>? headers,
+    List<String>? hubMethods,
+    Transport transport = Transport.auto,
+    void Function(ConnectionStatus?)? statusChangeCallback,
+    void Function(String, String)? hubCallback,
+  }) : super(baseUrl, hubName,
+            queryString: queryString,
+            headers: headers,
+            hubMethods: hubMethods,
+            statusChangeCallback: statusChangeCallback,
+            hubCallback: hubCallback);
 
   //---- Callback Methods ----//
   // ------------------------//
@@ -80,7 +68,7 @@ class SignalR implements SignalRPlatformApi, SignalrPlatformInterface {
 
       return connectionId;
     } catch (e) {
-      rethrow;
+      return Future.error(e);
     }
   }
 
@@ -90,7 +78,7 @@ class SignalR implements SignalRPlatformApi, SignalrPlatformInterface {
       connectionId = await _signalrApi.reconnect();
       return connectionId;
     } catch (e) {
-      rethrow;
+      return Future.error(e);
     }
   }
 
@@ -99,7 +87,7 @@ class SignalR implements SignalRPlatformApi, SignalrPlatformInterface {
     try {
       await _signalrApi.stop();
     } catch (e) {
-      rethrow;
+      return Future.error(e);
     }
   }
 
@@ -108,7 +96,7 @@ class SignalR implements SignalRPlatformApi, SignalrPlatformInterface {
     try {
       return await _signalrApi.isConnected();
     } catch (e) {
-      rethrow;
+      return Future.error(e);
     }
   }
 
@@ -117,7 +105,7 @@ class SignalR implements SignalRPlatformApi, SignalrPlatformInterface {
     try {
       return await _signalrApi.invokeMethod(methodName, arguments ?? List.empty());
     } catch (e) {
-      rethrow;
+      return Future.error(e);
     }
   }
 }
