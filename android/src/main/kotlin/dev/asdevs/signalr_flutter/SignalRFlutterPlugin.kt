@@ -183,7 +183,7 @@ class SignalrFlutterPlugin : FlutterPlugin, SignalrApi.SignalRHostApi {
 
             res.done { msg: String? ->
                 Handler(Looper.getMainLooper()).post {
-                    result?.success(msg)
+                    result?.success(msg ?: "")
                 }
             }
 
