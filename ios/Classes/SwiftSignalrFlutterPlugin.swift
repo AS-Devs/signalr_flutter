@@ -158,7 +158,7 @@ public class SwiftSignalrFlutterPlugin: NSObject, FlutterPlugin, FLTSignalRHostA
           if let error = error {
             completion(nil, FlutterError(code: "platform-error", message: String(describing: error), details: nil))
           } else {
-            completion(res as? String, nil)
+            completion(res as? String ?? "", nil)
           }
         })
       } else {

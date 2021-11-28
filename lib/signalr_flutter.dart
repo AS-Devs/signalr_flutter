@@ -49,6 +49,12 @@ class SignalR extends SignalrPlatformInterface implements SignalRPlatformApi {
 
   //---- Public Methods ----//
   // ------------------------//
+
+  /// Connect to the SignalR Server with given [baseUrl] & [hubName].
+  ///
+  /// [queryString] is a optional field to send query to server.
+  ///
+  /// Returns the [connectionId].
   @override
   Future<String?> connect() async {
     try {
@@ -72,6 +78,9 @@ class SignalR extends SignalrPlatformInterface implements SignalRPlatformApi {
     }
   }
 
+  /// Try to Reconnect SignalR connection if it gets disconnected.
+  ///
+  /// Returns the [connectionId]
   @override
   Future<String?> reconnect() async {
     try {
@@ -82,6 +91,7 @@ class SignalR extends SignalrPlatformInterface implements SignalRPlatformApi {
     }
   }
 
+  /// Stops SignalR connection
   @override
   void stop() async {
     try {
@@ -91,6 +101,9 @@ class SignalR extends SignalrPlatformInterface implements SignalRPlatformApi {
     }
   }
 
+  /// Checks if SignalR connection is still active.
+  ///
+  /// Returns a boolean value
   @override
   Future<bool> isConnected() async {
     try {
@@ -100,6 +113,7 @@ class SignalR extends SignalrPlatformInterface implements SignalRPlatformApi {
     }
   }
 
+  /// Invoke any server method with optional [arguments].
   @override
   Future<String> invokeMethod(String methodName, {List<String>? arguments}) async {
     try {

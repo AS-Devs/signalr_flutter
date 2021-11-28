@@ -64,3 +64,7 @@
     * `invokeMethod` now take only strings as arguments instead of dynamic.
     * `invokeMethod` now returns only string as result.
     * `hubCallback` now also returns string as message instead of dynamic.
+
+## 0.2.0-dev.2
+
+* Fix for invokeMethod calls having no return value.
