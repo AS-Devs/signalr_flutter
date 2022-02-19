@@ -92,7 +92,7 @@ open class SignalR: NSObject, WKNavigationDelegate, WKScriptMessageHandler {
   var internalID: String!
   var ready = false
 
-  public var signalRVersion: SignalRVersion = .v2_4_2
+  public var signalRVersion: SignalRVersion = .v2_4_3
   public var useWKWebView = true
   public var transport: Transport = .auto
 
@@ -291,7 +291,9 @@ open class SignalR: NSObject, WKNavigationDelegate, WKScriptMessageHandler {
       switch message {
       case "ready":
         let isHub = connectionType == .hub ? "true" : "false"
-        runJavaScript("swiftR.transport = '\(transport.stringValue)'")
+        if transport != Transport.auto {
+          runJavaScript("swiftR.transport = '\(transport.stringValue)'")
+        }
         runJavaScript("initialize('\(baseUrl)', \(isHub))")
         readyHandler(self)
         runJavaScript("start()")
@@ -511,6 +513,7 @@ open class Hub: NSObject {
 }
 
 public enum SignalRVersion : CustomStringConvertible {
+  case v2_4_3
   case v2_4_2
   case v2_4_1
   case v2_2_1
@@ -518,6 +521,7 @@ public enum SignalRVersion : CustomStringConvertible {
 
   public var description: String {
     switch self {
+    case .v2_4_3: return "2.4.3"
     case .v2_4_2: return "2.4.2"
     case .v2_4_1: return "2.4.1"
     case .v2_2_1: return "2.2.1"

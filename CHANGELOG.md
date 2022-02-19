@@ -68,3 +68,8 @@
 ## 0.2.0-dev.2
 
 * Fix for invokeMethod calls having no return value.
+
+## 0.2.0-dev.3
+
+* Updated signalr for iOS.
+* Transport fallback properly added for iOS.

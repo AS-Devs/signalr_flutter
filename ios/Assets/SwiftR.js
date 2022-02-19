@@ -1,7 +1,7 @@
 window.swiftR = {
     connection: null,
     hubs: {},
-    transport: 'auto',
+    transport: ['webSockets','serverSentEvents','longPolling'],
     headers: {},
     messages: {}
 };

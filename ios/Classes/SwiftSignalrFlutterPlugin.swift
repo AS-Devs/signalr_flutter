@@ -103,18 +103,13 @@ public class SwiftSignalrFlutterPlugin: NSObject, FlutterPlugin, FLTSignalRHostA
       SwiftSignalrFlutterPlugin.signalrApi?.onStatusChange(statusChangeResult, completion: { error in })
     }
 
-    connection.error = { [weak self] error in
+    connection.error = { error in
       print("SignalR Error: \(error ?? [:])")
       let statusChangeResult : FLTStatusChangeResult = FLTStatusChangeResult.init()
       statusChangeResult.connectionId = nil
       statusChangeResult.status = FLTConnectionStatus.connectionError
       statusChangeResult.errorMessage = error?.description
       SwiftSignalrFlutterPlugin.signalrApi?.onStatusChange(statusChangeResult, completion: { error in })
-
-      if let source = error?["source"] as? String, source == "TimeoutException" {
-        print("Connection timed out. Restarting...")
-        self?.connection.start()
-      }
     }
 
     connection.start()
