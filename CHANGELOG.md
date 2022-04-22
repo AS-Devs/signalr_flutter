@@ -73,3 +73,7 @@
 
 * Updated signalr for iOS.
 * Transport fallback properly added for iOS.
+
+## 0.2.0-dev.4
+
+* App bundle build issue fix.
