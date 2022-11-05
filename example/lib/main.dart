@@ -1,6 +1,5 @@
 // ignore_for_file: avoid_print
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 
@@ -78,7 +77,7 @@ class _MyAppState extends State<MyApp> {
   void _onStatusChange(ConnectionStatus? status) {
     if (mounted) {
       setState(() {
-        signalRStatus = describeEnum(status ?? ConnectionStatus.disconnected);
+        signalRStatus = status?.name ?? ConnectionStatus.disconnected.name;
       });
     }
   }

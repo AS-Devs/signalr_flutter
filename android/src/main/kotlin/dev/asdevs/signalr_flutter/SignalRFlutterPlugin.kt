@@ -22,24 +22,22 @@ class SignalrFlutterPlugin : FlutterPlugin, SignalrApi.SignalRHostApi {
 
     private lateinit var signalrApi: SignalrApi.SignalRPlatformApi
 
-    override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
+    override fun onAttachedToEngine(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
         SignalrApi.SignalRHostApi.setup(flutterPluginBinding.binaryMessenger, this);
         signalrApi = SignalrApi.SignalRPlatformApi(flutterPluginBinding.binaryMessenger)
     }
 
-    override fun onDetachedFromEngine(@NonNull binding: FlutterPlugin.FlutterPluginBinding) {
+    override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
         SignalrApi.SignalRHostApi.setup(binding.binaryMessenger, null);
     }
 
     override fun connect(
-        connectionOptions: SignalrApi.ConnectionOptions?,
+        connectionOptions: SignalrApi.ConnectionOptions,
         result: SignalrApi.Result<String>?
     ) {
         try {
-            connectionOptions ?: throw NullPointerException()
-
             connection =
-                if (connectionOptions.queryString != null && connectionOptions.queryString.isNotEmpty()) {
+                if (connectionOptions.queryString?.isNotEmpty() == true) {
                     HubConnection(
                         connectionOptions.baseUrl,
                         connectionOptions.queryString,
@@ -50,7 +48,7 @@ class SignalrFlutterPlugin : FlutterPlugin, SignalrApi.SignalRHostApi {
                     HubConnection(connectionOptions.baseUrl)
                 }
 
-            if (connectionOptions.headers != null && connectionOptions.headers.isNotEmpty()) {
+            if (connectionOptions.headers?.isNotEmpty() == true) {
                 val cred = Credentials { request ->
                     request.headers = connectionOptions.headers
                 }
@@ -59,7 +57,7 @@ class SignalrFlutterPlugin : FlutterPlugin, SignalrApi.SignalRHostApi {
 
             hub = connection.createHubProxy(connectionOptions.hubName)
 
-            connectionOptions.hubMethods.forEach { methodName ->
+            connectionOptions.hubMethods?.forEach { methodName ->
                 hub.on(methodName, { res ->
                     Handler(Looper.getMainLooper()).post {
                         signalrApi.onNewMessage(methodName, res) { }
@@ -71,7 +69,7 @@ class SignalrFlutterPlugin : FlutterPlugin, SignalrApi.SignalRHostApi {
                 Handler(Looper.getMainLooper()).post {
                     val statusChangeResult = SignalrApi.StatusChangeResult()
                     statusChangeResult.connectionId = connection.connectionId
-                    statusChangeResult.status = SignalrApi.ConnectionStatus.connected
+                    statusChangeResult.status = SignalrApi.ConnectionStatus.CONNECTED
                     signalrApi.onStatusChange(statusChangeResult) { }
                 }
             }
@@ -80,7 +78,7 @@ class SignalrFlutterPlugin : FlutterPlugin, SignalrApi.SignalRHostApi {
                 Handler(Looper.getMainLooper()).post {
                     val statusChangeResult = SignalrApi.StatusChangeResult()
                     statusChangeResult.connectionId = connection.connectionId
-                    statusChangeResult.status = SignalrApi.ConnectionStatus.connected
+                    statusChangeResult.status = SignalrApi.ConnectionStatus.CONNECTED
                     signalrApi.onStatusChange(statusChangeResult) { }
                 }
             }
@@ -89,7 +87,7 @@ class SignalrFlutterPlugin : FlutterPlugin, SignalrApi.SignalRHostApi {
                 Handler(Looper.getMainLooper()).post {
                     val statusChangeResult = SignalrApi.StatusChangeResult()
                     statusChangeResult.connectionId = connection.connectionId
-                    statusChangeResult.status = SignalrApi.ConnectionStatus.reconnecting
+                    statusChangeResult.status = SignalrApi.ConnectionStatus.RECONNECTING
                     signalrApi.onStatusChange(statusChangeResult) { }
                 }
             }
@@ -98,7 +96,7 @@ class SignalrFlutterPlugin : FlutterPlugin, SignalrApi.SignalRHostApi {
                 Handler(Looper.getMainLooper()).post {
                     val statusChangeResult = SignalrApi.StatusChangeResult()
                     statusChangeResult.connectionId = connection.connectionId
-                    statusChangeResult.status = SignalrApi.ConnectionStatus.disconnected
+                    statusChangeResult.status = SignalrApi.ConnectionStatus.DISCONNECTED
                     signalrApi.onStatusChange(statusChangeResult) { }
                 }
             }
@@ -107,7 +105,7 @@ class SignalrFlutterPlugin : FlutterPlugin, SignalrApi.SignalRHostApi {
                 Handler(Looper.getMainLooper()).post {
                     val statusChangeResult = SignalrApi.StatusChangeResult()
                     statusChangeResult.connectionId = connection.connectionId
-                    statusChangeResult.status = SignalrApi.ConnectionStatus.connectionSlow
+                    statusChangeResult.status = SignalrApi.ConnectionStatus.CONNECTION_SLOW
                     signalrApi.onStatusChange(statusChangeResult) { }
                 }
             }
@@ -115,19 +113,23 @@ class SignalrFlutterPlugin : FlutterPlugin, SignalrApi.SignalRHostApi {
             connection.error { handler ->
                 Handler(Looper.getMainLooper()).post {
                     val statusChangeResult = SignalrApi.StatusChangeResult()
-                    statusChangeResult.status = SignalrApi.ConnectionStatus.connectionError
+                    statusChangeResult.status = SignalrApi.ConnectionStatus.CONNECTION_ERROR
                     statusChangeResult.errorMessage = handler.localizedMessage
                     signalrApi.onStatusChange(statusChangeResult) { }
                 }
             }
 
             when (connectionOptions.transport) {
-                SignalrApi.Transport.serverSentEvents -> connection.start(
+                SignalrApi.Transport.SERVER_SENT_EVENTS -> connection.start(
                     ServerSentEventsTransport(
                         connection.logger
                     )
                 )
-                SignalrApi.Transport.longPolling -> connection.start(LongPollingTransport(connection.logger))
+                SignalrApi.Transport.LONG_POLLING -> connection.start(
+                    LongPollingTransport(
+                        connection.logger
+                    )
+                )
                 else -> {
                     connection.start()
                 }
@@ -172,12 +174,11 @@ class SignalrFlutterPlugin : FlutterPlugin, SignalrApi.SignalRHostApi {
     }
 
     override fun invokeMethod(
-        methodName: String?,
-        arguments: MutableList<String>?,
+        methodName: String,
+        arguments: MutableList<String>,
         result: SignalrApi.Result<String>?
     ) {
         try {
-            arguments ?: throw NullPointerException()
             val res: SignalRFuture<String> =
                 hub.invoke(String::class.java, methodName, *arguments.toTypedArray())
 

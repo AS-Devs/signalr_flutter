@@ -1,12 +1,12 @@
 import 'dart:async';
 
-import 'package:flutter/services.dart';
+import 'package:flutter/foundation.dart';
 import 'package:signalr_flutter/signalr_api.dart';
 import 'package:signalr_flutter/signalr_platform_interface.dart';
 
 class SignalR extends SignalrPlatformInterface implements SignalRPlatformApi {
   // Private variables
-  static late final SignalRHostApi _signalrApi = SignalRHostApi();
+  static final SignalRHostApi _signalrApi = SignalRHostApi();
 
   // Constructor
   SignalR(
@@ -18,32 +18,31 @@ class SignalR extends SignalrPlatformInterface implements SignalRPlatformApi {
     Transport transport = Transport.auto,
     void Function(ConnectionStatus?)? statusChangeCallback,
     void Function(String, String)? hubCallback,
-  }) : super(baseUrl, hubName,
-            queryString: queryString,
-            headers: headers,
-            hubMethods: hubMethods,
-            statusChangeCallback: statusChangeCallback,
-            hubCallback: hubCallback);
+  }) : super(
+          baseUrl,
+          hubName,
+          queryString: queryString,
+          headers: headers,
+          hubMethods: hubMethods,
+          statusChangeCallback: statusChangeCallback,
+          hubCallback: hubCallback,
+        );
 
   //---- Callback Methods ----//
   // ------------------------//
   @override
   Future<void> onNewMessage(String hubName, String message) async {
-    if (hubCallback != null) {
-      hubCallback!(hubName, message);
-    }
+    hubCallback?.call(hubName, message);
   }
 
   @override
   Future<void> onStatusChange(StatusChangeResult statusChangeResult) async {
     connectionId = statusChangeResult.connectionId;
 
-    if (statusChangeCallback != null) {
-      statusChangeCallback!(statusChangeResult.status);
-    }
+    statusChangeCallback?.call(statusChangeResult.status);
 
     if (statusChangeResult.errorMessage != null) {
-      throw PlatformException(code: 'channel-error', message: statusChangeResult.errorMessage);
+      debugPrint('SignalR Error: ${statusChangeResult.errorMessage}');
     }
   }
 
@@ -59,13 +58,14 @@ class SignalR extends SignalrPlatformInterface implements SignalRPlatformApi {
   Future<String?> connect() async {
     try {
       // Construct ConnectionOptions
-      ConnectionOptions options = ConnectionOptions();
-      options.baseUrl = baseUrl;
-      options.hubName = hubName;
-      options.queryString = queryString;
-      options.hubMethods = hubMethods;
-      options.headers = headers;
-      options.transport = transport;
+      ConnectionOptions options = ConnectionOptions(
+        baseUrl: baseUrl,
+        hubName: hubName,
+        queryString: queryString,
+        hubMethods: hubMethods,
+        headers: headers,
+        transport: transport,
+      );
 
       // Register SignalR Callbacks
       SignalRPlatformApi.setup(this);
@@ -93,7 +93,7 @@ class SignalR extends SignalrPlatformInterface implements SignalRPlatformApi {
 
   /// Stops SignalR connection
   @override
-  void stop() async {
+  Future<void> stop() async {
     try {
       await _signalrApi.stop();
     } catch (e) {

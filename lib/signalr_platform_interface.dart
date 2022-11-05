@@ -43,7 +43,7 @@ abstract class SignalrPlatformInterface {
   Future<String?> reconnect();
 
   /// Stops SignalR connection
-  void stop();
+  Future<void> stop();
 
   /// Checks if SignalR connection is still active.
   ///
