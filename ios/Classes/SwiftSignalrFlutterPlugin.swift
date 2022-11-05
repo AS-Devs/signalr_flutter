@@ -20,20 +20,15 @@ public class SwiftSignalrFlutterPlugin: NSObject, FlutterPlugin, FLTSignalRHostA
     SwiftSignalrFlutterPlugin.signalrApi = nil
   }
 
-  public func connect(_ connectionOptions: FLTConnectionOptions?, completion: @escaping (String?, FlutterError?) -> Void) {
-    guard let options = connectionOptions else {
-      completion(nil, FlutterError(code: "platform-error", message: "Connection options have null value", details: nil))
-      return
-    }
+  public func connect(_ connectionOptions: FLTConnectionOptions, completion: @escaping (String?, FlutterError?) -> Void) {
+    connection = SignalR(connectionOptions.baseUrl ?? "")
 
-    connection = SignalR(options.baseUrl ?? "")
-
-    if let queryString = options.queryString, !queryString.isEmpty {
+    if let queryString = connectionOptions.queryString, !queryString.isEmpty {
       let qs = queryString.components(separatedBy: "=")
       connection.queryString = [qs[0]:qs[1]]
     }
 
-    switch options.transport {
+    switch connectionOptions.transport {
     case .longPolling:
       connection.transport = Transport.longPolling
     case .serverSentEvents:
@@ -44,18 +39,18 @@ public class SwiftSignalrFlutterPlugin: NSObject, FlutterPlugin, FLTSignalRHostA
       break
     }
 
-    if let headers = options.headers, !headers.isEmpty {
+    if let headers = connectionOptions.headers, !headers.isEmpty {
       connection.headers = headers
     }
 
-    if let hubName = options.hubName {
+    if let hubName = connectionOptions.hubName {
       hub = connection.createHubProxy(hubName)
     }
 
-    if let hubMethods = options.hubMethods, !hubMethods.isEmpty {
+    if let hubMethods = connectionOptions.hubMethods, !hubMethods.isEmpty {
       hubMethods.forEach { (methodName) in
         hub.on(methodName) { (args) in
-          SwiftSignalrFlutterPlugin.signalrApi?.onNewMessageHubName(methodName, message: args?[0] as? String, completion: { error in })
+          SwiftSignalrFlutterPlugin.signalrApi?.onNewMessageHubName(methodName, message: args?[0] as? String ?? "", completion: { error in })
         }
       }
     }
@@ -146,10 +141,10 @@ public class SwiftSignalrFlutterPlugin: NSObject, FlutterPlugin, FLTSignalRHostA
     }
   }
 
-  public func invokeMethodMethodName(_ methodName: String?, arguments: [String]?, completion: @escaping (String?, FlutterError?) -> Void) {
+  public func invokeMethodMethodName(_ methodName: String, arguments: [String], completion: @escaping (String?, FlutterError?) -> Void) {
     do {
       if let hub = self.hub {
-        try hub.invoke(methodName!, arguments: arguments, callback: { (res, error) in
+        try hub.invoke(methodName, arguments: arguments, callback: { (res, error) in
           if let error = error {
             completion(nil, FlutterError(code: "platform-error", message: String(describing: error), details: nil))
           } else {
