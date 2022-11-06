@@ -77,3 +77,8 @@
 ## 0.2.0-dev.4
 
 * App bundle build issue fix.
+
+## 0.2.0-dev.5
+
+* Removed unnecessary platform exceptions.
+* Updated dependencies.

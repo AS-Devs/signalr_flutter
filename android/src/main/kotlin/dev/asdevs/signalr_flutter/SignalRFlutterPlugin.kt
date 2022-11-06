@@ -2,7 +2,6 @@ package dev.asdevs.signalr_flutter
 
 import android.os.Handler
 import android.os.Looper
-import androidx.annotation.NonNull
 
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import microsoft.aspnet.signalr.client.ConnectionState
@@ -23,12 +22,12 @@ class SignalrFlutterPlugin : FlutterPlugin, SignalrApi.SignalRHostApi {
     private lateinit var signalrApi: SignalrApi.SignalRPlatformApi
 
     override fun onAttachedToEngine(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
-        SignalrApi.SignalRHostApi.setup(flutterPluginBinding.binaryMessenger, this);
+        SignalrApi.SignalRHostApi.setup(flutterPluginBinding.binaryMessenger, this)
         signalrApi = SignalrApi.SignalRPlatformApi(flutterPluginBinding.binaryMessenger)
     }
 
     override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
-        SignalrApi.SignalRHostApi.setup(binding.binaryMessenger, null);
+        SignalrApi.SignalRHostApi.setup(binding.binaryMessenger, null)
     }
 
     override fun connect(
