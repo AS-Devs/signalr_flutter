@@ -82,3 +82,14 @@
 
 * Removed unnecessary platform exceptions.
 * Updated dependencies.
+
+## 0.2.0
+
+* Rewrote the plugin using pigeon.
+* Removed unnecessary platform exceptions.
+* Updated signalr for iOS.
+* Updated all dependencies to the latest.
+* **Breaking Changes**: 
+    * `invokeMethod` now take only strings as arguments instead of dynamic.
+    * `invokeMethod` now returns only string as result.
+    * `hubCallback` now also returns string as message instead of dynamic.
