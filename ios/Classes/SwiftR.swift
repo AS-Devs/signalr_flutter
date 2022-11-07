@@ -3,9 +3,9 @@
 //  signalR
 //
 //  Created by Adam Hartford on 4/13/15.
-//  Modified by Ayon Das on 23/07/20.
+//  Modified by Ayon Das on 07/11/21.
 //
-//  Copyright (c) 2020 Ayon Das. All rights reserved.
+//  Copyright (c) 2021 Ayon Das. All rights reserved.
 //
 
 import Foundation
@@ -92,7 +92,7 @@ open class SignalR: NSObject, WKNavigationDelegate, WKScriptMessageHandler {
   var internalID: String!
   var ready = false
 
-  public var signalRVersion: SignalRVersion = .v2_4_1
+  public var signalRVersion: SignalRVersion = .v2_4_3
   public var useWKWebView = true
   public var transport: Transport = .auto
 
@@ -291,7 +291,9 @@ open class SignalR: NSObject, WKNavigationDelegate, WKScriptMessageHandler {
       switch message {
       case "ready":
         let isHub = connectionType == .hub ? "true" : "false"
-        runJavaScript("swiftR.transport = '\(transport.stringValue)'")
+        if transport != Transport.auto {
+          runJavaScript("swiftR.transport = '\(transport.stringValue)'")
+        }
         runJavaScript("initialize('\(baseUrl)', \(isHub))")
         readyHandler(self)
         runJavaScript("start()")
@@ -407,7 +409,7 @@ open class SignalR: NSObject, WKNavigationDelegate, WKScriptMessageHandler {
         } else if let e = err {
           print("SwiftR unable to process message \(id): \(e)")
         } else {
-          print("SwiftR unable to process message \(id)")
+          print("SwiftR unable to process message \(id): \(msg ?? "Empty Message"): \(type(of: msg))")
         }
       })
     }
@@ -511,12 +513,16 @@ open class Hub: NSObject {
 }
 
 public enum SignalRVersion : CustomStringConvertible {
+  case v2_4_3
+  case v2_4_2
   case v2_4_1
   case v2_2_1
   case v2_2_0
 
   public var description: String {
     switch self {
+    case .v2_4_3: return "2.4.3"
+    case .v2_4_2: return "2.4.2"
     case .v2_4_1: return "2.4.1"
     case .v2_2_1: return "2.2.1"
     case .v2_2_0: return "2.2.0"

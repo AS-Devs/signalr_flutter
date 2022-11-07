@@ -1,21 +1,25 @@
+// ignore_for_file: avoid_print
+
 import 'package:flutter/material.dart';
 import 'dart:async';
+
+import 'package:signalr_flutter/signalr_api.dart';
 import 'package:signalr_flutter/signalr_flutter.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatefulWidget {
+  const MyApp({Key? key}) : super(key: key);
+
   @override
-  _MyAppState createState() => _MyAppState();
+  State<MyApp> createState() => _MyAppState();
 }
 
 class _MyAppState extends State<MyApp> {
-  String _signalRStatus = 'Unknown';
+  String signalRStatus = "disconnected";
   late SignalR signalR;
-  final GlobalKey<ScaffoldMessengerState> rootScaffoldMessengerKey =
-      GlobalKey<ScaffoldMessengerState>();
 
   @override
   void initState() {
@@ -26,41 +30,43 @@ class _MyAppState extends State<MyApp> {
   // Platform messages are asynchronous, so we initialize in an async method.
   Future<void> initPlatformState() async {
     signalR = SignalR(
-        '<Your server url here>',
-        "<Your hub name here>",
-        hubMethods: ["<Your Hub Method Names>"],
-        statusChangeCallback: _onStatusChange,
-        hubCallback: _onNewMessage);
+      "<Your server url here>",
+      "<Your hub name here>",
+      hubMethods: ["<Your Hub Method Names>"],
+      statusChangeCallback: _onStatusChange,
+      hubCallback: _onNewMessage,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      scaffoldMessengerKey: rootScaffoldMessengerKey,
       home: Scaffold(
         appBar: AppBar(
-          title: const Text('SignalR Plugin Example App'),
+          title: const Text("SignalR Plugin Example App"),
         ),
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
-              Text('Connection Status: $_signalRStatus\n',
-                  style: Theme.of(context).textTheme.headline5),
+              Text("Connection Status: $signalRStatus\n",
+                  style: Theme.of(context).textTheme.headline6),
               Padding(
                 padding: const EdgeInsets.only(top: 20.0),
                 child: ElevatedButton(
-                    onPressed: _buttonTapped, child: Text("Invoke Method")),
+                    onPressed: _buttonTapped,
+                    child: const Text("Invoke Method")),
               )
             ],
           ),
         ),
         floatingActionButton: FloatingActionButton(
-          child: Icon(Icons.cast_connected),
+          child: const Icon(Icons.cast_connected),
           onPressed: () async {
-            final isConnected = await signalR.isConnected ?? false;
+            final isConnected = await signalR.isConnected();
             if (!isConnected) {
-              await signalR.connect();
+              final connId = await signalR.connect();
+              print("Connection ID: $connId");
             } else {
               signalR.stop();
             }
@@ -70,24 +76,25 @@ class _MyAppState extends State<MyApp> {
     );
   }
 
-  _onStatusChange(dynamic status) {
+  void _onStatusChange(ConnectionStatus? status) {
     if (mounted) {
       setState(() {
-        _signalRStatus = status as String;
+        signalRStatus = status?.name ?? ConnectionStatus.disconnected.name;
       });
     }
   }
 
-  _onNewMessage(String? methodName, dynamic message) {
-    print('MethodName = $methodName, Message = $message');
+  void _onNewMessage(String methodName, String message) {
+    print("MethodName = $methodName, Message = $message");
   }
 
-  _buttonTapped() async {
-    final res = await signalR.invokeMethod<dynamic>("<Your Method Name>",
-        arguments: ["<Your Method Arguments>"]).catchError((error) {
-      print(error.toString());
-    });
-    final snackBar = SnackBar(content: Text('SignalR Method Response: $res'));
-    rootScaffoldMessengerKey.currentState!.showSnackBar(snackBar);
+  void _buttonTapped() async {
+    try {
+      final result = await signalR.invokeMethod("<Your Method Name>",
+          arguments: ["<Your Method Arguments>"]);
+      print(result);
+    } catch (e) {
+      print(e);
+    }
   }
 }

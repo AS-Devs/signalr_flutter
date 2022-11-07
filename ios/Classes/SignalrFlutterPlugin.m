@@ -10,6 +10,6 @@
 
 @implementation SignalrFlutterPlugin
 + (void)registerWithRegistrar:(NSObject<FlutterPluginRegistrar>*)registrar {
-  [SwiftSignalRFlutterPlugin registerWithRegistrar:registrar];
+  [SwiftSignalrFlutterPlugin registerWithRegistrar:registrar];
 }
 @end

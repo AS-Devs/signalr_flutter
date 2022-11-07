@@ -1,160 +1,127 @@
 import 'dart:async';
-import 'package:flutter/services.dart';
 
-/// Transport method of the signalr connection.
-enum Transport { Auto, ServerSentEvents, LongPolling }
+import 'package:flutter/foundation.dart';
+import 'package:signalr_flutter/signalr_api.dart';
+import 'package:signalr_flutter/signalr_platform_interface.dart';
 
-/// A .Net SignalR Client for Flutter.
-class SignalR {
-  final String baseUrl;
-  final String? queryString;
-  final String hubName;
+class SignalR extends SignalrPlatformInterface implements SignalRPlatformApi {
+  // Private variables
+  static final SignalRHostApi _signalrApi = SignalRHostApi();
 
-  /// [Transport.Auto] is default.
-  final Transport transport;
-  final Map<String, String>? headers;
+  // Constructor
+  SignalR(
+    String baseUrl,
+    String hubName, {
+    String? queryString,
+    Map<String, String>? headers,
+    List<String>? hubMethods,
+    Transport transport = Transport.auto,
+    void Function(ConnectionStatus?)? statusChangeCallback,
+    void Function(String, String)? hubCallback,
+  }) : super(
+          baseUrl,
+          hubName,
+          queryString: queryString,
+          headers: headers,
+          hubMethods: hubMethods,
+          statusChangeCallback: statusChangeCallback,
+          hubCallback: hubCallback,
+        );
 
-  /// List of Hub method names you want to subscribe. Every subsequent message from server gets called on [hubCallback].
-  final List<String>? hubMethods;
+  //---- Callback Methods ----//
+  // ------------------------//
+  @override
+  Future<void> onNewMessage(String hubName, String message) async {
+    hubCallback?.call(hubName, message);
+  }
 
-  /// This callback gets called whenever SignalR connection status with server changes.
-  final Function(dynamic)? statusChangeCallback;
+  @override
+  Future<void> onStatusChange(StatusChangeResult statusChangeResult) async {
+    connectionId = statusChangeResult.connectionId;
 
-  /// This callback gets called whenever SignalR server sends some message to client.
-  final Function(String?, dynamic)? hubCallback;
+    statusChangeCallback?.call(statusChangeResult.status);
 
-  static const MethodChannel _channel = const MethodChannel('signalR');
+    if (statusChangeResult.errorMessage != null) {
+      debugPrint('SignalR Error: ${statusChangeResult.errorMessage}');
+    }
+  }
 
-  static const String CONNECTION_STATUS = "ConnectionStatus";
-  static const String NEW_MESSAGE = "NewMessage";
-
-  SignalR(this.baseUrl, this.hubName,
-      {this.queryString,
-      this.headers,
-      this.hubMethods,
-      this.transport = Transport.Auto,
-      this.statusChangeCallback,
-      this.hubCallback})
-      : assert(baseUrl != ''),
-        assert(hubName != '');
+  //---- Public Methods ----//
+  // ------------------------//
 
   /// Connect to the SignalR Server with given [baseUrl] & [hubName].
   ///
   /// [queryString] is a optional field to send query to server.
-  Future<bool?> connect() async {
+  ///
+  /// Returns the [connectionId].
+  @override
+  Future<String?> connect() async {
     try {
-      final result = await _channel
-          .invokeMethod<bool>("connectToServer", <String, dynamic>{
-        'baseUrl': baseUrl,
-        'hubName': hubName,
-        'queryString': queryString ?? "",
-        'headers': headers ?? {},
-        'hubMethods': hubMethods ?? [],
-        'transport': transport.index
-      });
+      // Construct ConnectionOptions
+      ConnectionOptions options = ConnectionOptions(
+        baseUrl: baseUrl,
+        hubName: hubName,
+        queryString: queryString,
+        hubMethods: hubMethods,
+        headers: headers,
+        transport: transport,
+      );
 
-      _signalRCallbackHandler();
+      // Register SignalR Callbacks
+      SignalRPlatformApi.setup(this);
 
-      return result;
-    } on PlatformException catch (ex) {
-      print("Platform Error: ${ex.message}");
-      return Future.error(ex.message!);
-    } on Exception catch (ex) {
-      print("Error: ${ex.toString()}");
-      return Future.error(ex.toString());
+      connectionId = await _signalrApi.connect(options);
+
+      return connectionId;
+    } catch (e) {
+      return Future.error(e);
     }
   }
 
   /// Try to Reconnect SignalR connection if it gets disconnected.
-  void reconnect() async {
+  ///
+  /// Returns the [connectionId]
+  @override
+  Future<String?> reconnect() async {
     try {
-      await _channel.invokeMethod("reconnect");
-    } on PlatformException catch (ex) {
-      print("Platform Error: ${ex.message}");
-      return Future.error(ex.message!);
-    } on Exception catch (ex) {
-      print("Error: ${ex.toString()}");
-      return Future.error(ex.toString());
+      connectionId = await _signalrApi.reconnect();
+      return connectionId;
+    } catch (e) {
+      return Future.error(e);
     }
   }
 
-  /// Stop SignalR connection
-  void stop() async {
+  /// Stops SignalR connection
+  @override
+  Future<void> stop() async {
     try {
-      await _channel.invokeMethod("stop");
-    } on PlatformException catch (ex) {
-      print("Platform Error: ${ex.message}");
-      return Future.error(ex.message!);
-    } on Exception catch (ex) {
-      print("Error: ${ex.toString()}");
-      return Future.error(ex.toString());
+      await _signalrApi.stop();
+    } catch (e) {
+      return Future.error(e);
     }
   }
 
-  Future<bool?> get isConnected async {
+  /// Checks if SignalR connection is still active.
+  ///
+  /// Returns a boolean value
+  @override
+  Future<bool> isConnected() async {
     try {
-      return await _channel.invokeMethod<bool>("isConnected");
-    } on PlatformException catch (ex) {
-      print("Platform Error: ${ex.message}");
-      return Future.error(ex.message!);
-    } on Exception catch (ex) {
-      print("Error: ${ex.toString()}");
-      return Future.error(ex.toString());
-    }
-  }
-
-  @Deprecated(
-      "This method no longer works on iOS. For now it may work on Android but this will be removed later. Consider using constructor parameter [hubMethods]")
-
-  /// Subscribe to a Hub method. Every subsequent message from server gets called on [hubCallback].
-  void subscribeToHubMethod(String methodName) async {
-    try {
-      await _channel.invokeMethod("listenToHubMethod", methodName);
-    } on PlatformException catch (ex) {
-      print("Platform Error: ${ex.message}");
-      return Future.error(ex.message!);
-    } on Exception catch (ex) {
-      print("Error: ${ex.toString()}");
-      return Future.error(ex.toString());
+      return await _signalrApi.isConnected();
+    } catch (e) {
+      return Future.error(e);
     }
   }
 
   /// Invoke any server method with optional [arguments].
-  Future<T?> invokeMethod<T>(String methodName,
-      {List<dynamic>? arguments}) async {
+  @override
+  Future<String> invokeMethod(String methodName,
+      {List<String>? arguments}) async {
     try {
-      final result = await _channel.invokeMethod<T>(
-          "invokeServerMethod", <String, dynamic>{
-        'methodName': methodName,
-        'arguments': arguments ?? List.empty()
-      });
-      return result;
-    } on PlatformException catch (ex) {
-      print("Platform Error: ${ex.message}");
-      return Future.error(ex.message!);
-    } on Exception catch (ex) {
-      print("Error: ${ex.toString()}");
-      return Future.error(ex.toString());
+      return await _signalrApi.invokeMethod(
+          methodName, arguments ?? List.empty());
+    } catch (e) {
+      return Future.error(e);
     }
-  }
-
-  /// Listen for any message from native side and pass that to proper callbacks.
-  void _signalRCallbackHandler() {
-    _channel.setMethodCallHandler((call) {
-      switch (call.method) {
-        case CONNECTION_STATUS:
-          statusChangeCallback!(call.arguments);
-          break;
-        case NEW_MESSAGE:
-          if (call.arguments is List) {
-            hubCallback!(call.arguments[0], call.arguments[1]);
-          } else {
-            hubCallback!("", call.arguments);
-          }
-          break;
-        default:
-      }
-      return Future.value();
-    });
   }
 }

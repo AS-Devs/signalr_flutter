@@ -56,3 +56,40 @@
 ## 0.1.2
 
 * IsConnected Method Added
+
+## 0.2.0-dev.1
+
+* Rewrote the plugin using pigeon
+* **Breaking Changes**: 
+    * `invokeMethod` now take only strings as arguments instead of dynamic.
+    * `invokeMethod` now returns only string as result.
+    * `hubCallback` now also returns string as message instead of dynamic.
+
+## 0.2.0-dev.2
+
+* Fix for invokeMethod calls having no return value.
+
+## 0.2.0-dev.3
+
+* Updated signalr for iOS.
+* Transport fallback properly added for iOS.
+
+## 0.2.0-dev.4
+
+* App bundle build issue fix.
+
+## 0.2.0-dev.5
+
+* Removed unnecessary platform exceptions.
+* Updated dependencies.
+
+## 0.2.0
+
+* Rewrote the plugin using pigeon.
+* Removed unnecessary platform exceptions.
+* Updated signalr for iOS.
+* Updated all dependencies to the latest.
+* **Breaking Changes**: 
+    * `invokeMethod` now take only strings as arguments instead of dynamic.
+    * `invokeMethod` now returns only string as result.
+    * `hubCallback` now also returns string as message instead of dynamic.

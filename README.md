@@ -49,3 +49,4 @@ R8 may strip away some SignalR classes for the Android in Release Builds. Add th
 For more info check example.
 
 Any issue or PR is always welcome.
+

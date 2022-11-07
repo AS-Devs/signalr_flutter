@@ -1,84 +1,197 @@
 package dev.asdevs.signalr_flutter
 
-import androidx.annotation.NonNull;
+import android.os.Handler
+import android.os.Looper
 
 import io.flutter.embedding.engine.plugins.FlutterPlugin
-import io.flutter.plugin.common.MethodCall
-import io.flutter.plugin.common.MethodChannel
-import io.flutter.plugin.common.MethodChannel.MethodCallHandler
-import io.flutter.plugin.common.MethodChannel.Result
-import io.flutter.plugin.common.PluginRegistry.Registrar
+import microsoft.aspnet.signalr.client.ConnectionState
+import microsoft.aspnet.signalr.client.Credentials
+import microsoft.aspnet.signalr.client.LogLevel
+import microsoft.aspnet.signalr.client.SignalRFuture
+import microsoft.aspnet.signalr.client.hubs.HubConnection
+import microsoft.aspnet.signalr.client.hubs.HubProxy
+import microsoft.aspnet.signalr.client.transport.LongPollingTransport
+import microsoft.aspnet.signalr.client.transport.ServerSentEventsTransport
+import java.lang.Exception
 
-/** SignalRFlutterPlugin */
-public class SignalRFlutterPlugin : FlutterPlugin, MethodCallHandler {
-    override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
-        channel = MethodChannel(flutterPluginBinding.binaryMessenger, "signalR")
-        channel.setMethodCallHandler(this);
+/** SignalrFlutterPlugin */
+class SignalrFlutterPlugin : FlutterPlugin, SignalrApi.SignalRHostApi {
+    private lateinit var connection: HubConnection
+    private lateinit var hub: HubProxy
+
+    private lateinit var signalrApi: SignalrApi.SignalRPlatformApi
+
+    override fun onAttachedToEngine(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
+        SignalrApi.SignalRHostApi.setup(flutterPluginBinding.binaryMessenger, this)
+        signalrApi = SignalrApi.SignalRPlatformApi(flutterPluginBinding.binaryMessenger)
     }
 
-    // This static function is optional and equivalent to onAttachedToEngine. It supports the old
-    // pre-Flutter-1.12 Android projects. You are encouraged to continue supporting
-    // plugin registration via this function while apps migrate to use the new Android APIs
-    // post-flutter-1.12 via https://flutter.dev/go/android-project-migration.
-    //
-    // It is encouraged to share logic between onAttachedToEngine and registerWith to keep
-    // them functionally equivalent. Only one of onAttachedToEngine or registerWith will be called
-    // depending on the user's project. onAttachedToEngine or registerWith must both be defined
-    // in the same class.
-    companion object {
-        lateinit var channel: MethodChannel
-
-        @JvmStatic
-        fun registerWith(registrar: Registrar) {
-            val channel = MethodChannel(registrar.messenger(), "signalR")
-            channel.setMethodCallHandler(SignalRFlutterPlugin())
-        }
+    override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
+        SignalrApi.SignalRHostApi.setup(binding.binaryMessenger, null)
     }
 
-    override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {
-        when (call.method) {
-            CallMethod.ConnectToServer.value -> {
-                val arguments = call.arguments as Map<*, *>
-                @Suppress("UNCHECKED_CAST")
-                SignalR.connectToServer(
-                        arguments["baseUrl"] as String,
-                        arguments["hubName"] as String,
-                        arguments["queryString"] as String,
-                        arguments["headers"] as? Map<String, String> ?: emptyMap(),
-                        arguments["transport"] as Int,
-                        arguments["hubMethods"] as? List<String> ?: emptyList(),
-                        result)
-            }
-            CallMethod.Reconnect.value -> {
-                SignalR.reconnect(result)
-            }
-            CallMethod.Stop.value -> {
-                SignalR.stop(result)
-            }
-            CallMethod.IsConnected.value -> {
-                SignalR.isConnected(result)
-            }
-            CallMethod.ListenToHubMethod.value -> {
-                if (call.arguments is String) {
-                    val methodName = call.arguments as String
-                    SignalR.listenToHubMethod(methodName, result)
+    override fun connect(
+        connectionOptions: SignalrApi.ConnectionOptions,
+        result: SignalrApi.Result<String>?
+    ) {
+        try {
+            connection =
+                if (connectionOptions.queryString?.isNotEmpty() == true) {
+                    HubConnection(
+                        connectionOptions.baseUrl,
+                        connectionOptions.queryString,
+                        true
+                    ) { _: String, _: LogLevel ->
+                    }
                 } else {
-                    result.error("Error", "Cast to String Failed", "")
+                    HubConnection(connectionOptions.baseUrl)
+                }
+
+            if (connectionOptions.headers?.isNotEmpty() == true) {
+                val cred = Credentials { request ->
+                    request.headers = connectionOptions.headers
+                }
+                connection.credentials = cred
+            }
+
+            hub = connection.createHubProxy(connectionOptions.hubName)
+
+            connectionOptions.hubMethods?.forEach { methodName ->
+                hub.on(methodName, { res ->
+                    Handler(Looper.getMainLooper()).post {
+                        signalrApi.onNewMessage(methodName, res) { }
+                    }
+                }, String::class.java)
+            }
+
+            connection.connected {
+                Handler(Looper.getMainLooper()).post {
+                    val statusChangeResult = SignalrApi.StatusChangeResult()
+                    statusChangeResult.connectionId = connection.connectionId
+                    statusChangeResult.status = SignalrApi.ConnectionStatus.CONNECTED
+                    signalrApi.onStatusChange(statusChangeResult) { }
                 }
             }
-            CallMethod.InvokeServerMethod.value -> {
-                val arguments = call.arguments as Map<*, *>
-                @Suppress("UNCHECKED_CAST")
-                SignalR.invokeServerMethod(arguments["methodName"] as String, arguments["arguments"] as? List<Any>
-                        ?: emptyList(), result)
+
+            connection.reconnected {
+                Handler(Looper.getMainLooper()).post {
+                    val statusChangeResult = SignalrApi.StatusChangeResult()
+                    statusChangeResult.connectionId = connection.connectionId
+                    statusChangeResult.status = SignalrApi.ConnectionStatus.CONNECTED
+                    signalrApi.onStatusChange(statusChangeResult) { }
+                }
             }
-            else -> {
-                result.notImplemented()
+
+            connection.reconnecting {
+                Handler(Looper.getMainLooper()).post {
+                    val statusChangeResult = SignalrApi.StatusChangeResult()
+                    statusChangeResult.connectionId = connection.connectionId
+                    statusChangeResult.status = SignalrApi.ConnectionStatus.RECONNECTING
+                    signalrApi.onStatusChange(statusChangeResult) { }
+                }
             }
+
+            connection.closed {
+                Handler(Looper.getMainLooper()).post {
+                    val statusChangeResult = SignalrApi.StatusChangeResult()
+                    statusChangeResult.connectionId = connection.connectionId
+                    statusChangeResult.status = SignalrApi.ConnectionStatus.DISCONNECTED
+                    signalrApi.onStatusChange(statusChangeResult) { }
+                }
+            }
+
+            connection.connectionSlow {
+                Handler(Looper.getMainLooper()).post {
+                    val statusChangeResult = SignalrApi.StatusChangeResult()
+                    statusChangeResult.connectionId = connection.connectionId
+                    statusChangeResult.status = SignalrApi.ConnectionStatus.CONNECTION_SLOW
+                    signalrApi.onStatusChange(statusChangeResult) { }
+                }
+            }
+
+            connection.error { handler ->
+                Handler(Looper.getMainLooper()).post {
+                    val statusChangeResult = SignalrApi.StatusChangeResult()
+                    statusChangeResult.status = SignalrApi.ConnectionStatus.CONNECTION_ERROR
+                    statusChangeResult.errorMessage = handler.localizedMessage
+                    signalrApi.onStatusChange(statusChangeResult) { }
+                }
+            }
+
+            when (connectionOptions.transport) {
+                SignalrApi.Transport.SERVER_SENT_EVENTS -> connection.start(
+                    ServerSentEventsTransport(
+                        connection.logger
+                    )
+                )
+                SignalrApi.Transport.LONG_POLLING -> connection.start(
+                    LongPollingTransport(
+                        connection.logger
+                    )
+                )
+                else -> {
+                    connection.start()
+                }
+            }
+
+            result?.success(connection.connectionId ?: "")
+        } catch (ex: Exception) {
+            result?.error(ex)
         }
     }
 
-    override fun onDetachedFromEngine(@NonNull binding: FlutterPlugin.FlutterPluginBinding) {
-        channel.setMethodCallHandler(null)
+    override fun reconnect(result: SignalrApi.Result<String>?) {
+        try {
+            connection.start()
+            result?.success(connection.connectionId ?: "")
+        } catch (ex: Exception) {
+            result?.error(ex)
+        }
+    }
+
+    override fun stop(result: SignalrApi.Result<Void>?) {
+        try {
+            connection.stop()
+        } catch (ex: Exception) {
+            result?.error(ex)
+        }
+    }
+
+    override fun isConnected(result: SignalrApi.Result<Boolean>?) {
+        try {
+            if (this::connection.isInitialized) {
+                when (connection.state) {
+                    ConnectionState.Connected -> result?.success(true)
+                    else -> result?.success(false)
+                }
+            } else {
+                result?.success(false)
+            }
+        } catch (ex: Exception) {
+            result?.error(ex)
+        }
+    }
+
+    override fun invokeMethod(
+        methodName: String,
+        arguments: MutableList<String>,
+        result: SignalrApi.Result<String>?
+    ) {
+        try {
+            val res: SignalRFuture<String> =
+                hub.invoke(String::class.java, methodName, *arguments.toTypedArray())
+
+            res.done { msg: String? ->
+                Handler(Looper.getMainLooper()).post {
+                    result?.success(msg ?: "")
+                }
+            }
+
+            res.onError { throwable ->
+                throw throwable
+            }
+        } catch (ex: Exception) {
+            result?.error(ex)
+        }
     }
 }
