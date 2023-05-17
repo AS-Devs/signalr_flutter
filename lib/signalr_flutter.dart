@@ -7,7 +7,7 @@ import 'package:signalr_flutter/signalr_platform_interface.dart';
 class SignalR extends SignalrPlatformInterface implements SignalRPlatformApi {
   // Private variables
   static final SignalRHostApi _signalrApi = SignalRHostApi();
-
+  final Function(String?)? connectionErrorCallback;
   // Constructor
   SignalR(
     String baseUrl,
@@ -18,6 +18,7 @@ class SignalR extends SignalrPlatformInterface implements SignalRPlatformApi {
     Transport transport = Transport.auto,
     void Function(ConnectionStatus?)? statusChangeCallback,
     void Function(String, String)? hubCallback,
+    this.connectionErrorCallback,
   }) : super(
           baseUrl,
           hubName,
@@ -43,6 +44,7 @@ class SignalR extends SignalrPlatformInterface implements SignalRPlatformApi {
 
     if (statusChangeResult.errorMessage != null) {
       debugPrint('SignalR Error: ${statusChangeResult.errorMessage}');
+      connectionErrorCallback?.call(statusChangeResult.errorMessage);
     }
   }
 
