@@ -45,20 +45,23 @@ class _MyAppState extends State<MyApp> {
         appBar: AppBar(
           title: const Text("SignalR Plugin Example App"),
         ),
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              Text("Connection Status: $signalRStatus\n",
-                  style: Theme.of(context).textTheme.headline6),
-              Padding(
-                padding: const EdgeInsets.only(top: 20.0),
-                child: ElevatedButton(
-                    onPressed: _buttonTapped,
-                    child: const Text("Invoke Method")),
-              )
-            ],
-          ),
+        body: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Text(
+              "Connection Status: $signalRStatus\n",
+              style: Theme.of(context).textTheme.titleLarge,
+              textAlign: TextAlign.center,
+            ),
+            Padding(
+              padding: const EdgeInsets.only(top: 20.0),
+              child: ElevatedButton(
+                onPressed: _buttonTapped,
+                child: const Text("Invoke Method"),
+              ),
+            )
+          ],
         ),
         floatingActionButton: FloatingActionButton(
           child: const Icon(Icons.cast_connected),
@@ -90,8 +93,10 @@ class _MyAppState extends State<MyApp> {
 
   void _buttonTapped() async {
     try {
-      final result = await signalR.invokeMethod("<Your Method Name>",
-          arguments: ["<Your Method Arguments>"]);
+      final result = await signalR.invokeMethod(
+        "<Your Method Name>",
+        arguments: ["<Your Method Arguments>"],
+      );
       print(result);
     } catch (e) {
       print(e);
