@@ -28,7 +28,7 @@ abstract class SignalrPlatformInterface {
   final void Function(ConnectionStatus?)? statusChangeCallback;
 
   /// This callback gets called whenever SignalR server sends some message to client.
-  final void Function(String, String)? hubCallback;
+  final void Function(String, {List<String>? params})? hubCallback;
 
   /// Connect to the SignalR Server with given [baseUrl] & [hubName].
   ///

@@ -304,7 +304,7 @@ abstract class SignalRPlatformApi {
   static const MessageCodec<Object?> codec = _SignalRPlatformApiCodec();
 
   Future<void> onStatusChange(StatusChangeResult statusChangeResult);
-  Future<void> onNewMessage(String hubName, String message);
+  Future<void> onNewMessage(String hubName, {List<String>? params});
   static void setup(SignalRPlatformApi? api,
       {BinaryMessenger? binaryMessenger}) {
     {
@@ -341,10 +341,17 @@ abstract class SignalRPlatformApi {
           final String? arg_hubName = (args[0] as String?);
           assert(arg_hubName != null,
               'Argument for dev.flutter.pigeon.SignalRPlatformApi.onNewMessage was null, expected non-null String.');
-          final String? arg_message = (args[1] as String?);
-          assert(arg_message != null,
-              'Argument for dev.flutter.pigeon.SignalRPlatformApi.onNewMessage was null, expected non-null String.');
-          await api.onNewMessage(arg_hubName!, arg_message!);
+          List<String> params = [];
+          for(var item in args) {
+            params.add("$item");
+          }
+          //List<String> params = args as List<String>;
+          params.removeAt(0);
+          // assert(arg_message1 != null,
+          //     'Argument for dev.flutter.pigeon.SignalRPlatformApi.onNewMessage was null, expected non-null String.');
+          // assert(arg_message2 != null,
+          // 'Argument for dev.flutter.pigeon.SignalRPlatformApi.onNewMessage was null, expected non-null String.');
+          await api.onNewMessage(arg_hubName!, params: params);
           return;
         });
       }
