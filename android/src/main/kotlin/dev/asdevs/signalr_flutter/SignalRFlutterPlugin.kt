@@ -13,6 +13,7 @@ import microsoft.aspnet.signalr.client.hubs.HubProxy
 import microsoft.aspnet.signalr.client.transport.LongPollingTransport
 import microsoft.aspnet.signalr.client.transport.ServerSentEventsTransport
 import java.lang.Exception
+import org.json.JSONArray
 
 /** SignalrFlutterPlugin */
 class SignalrFlutterPlugin : FlutterPlugin, SignalrApi.SignalRHostApi {
@@ -56,12 +57,30 @@ class SignalrFlutterPlugin : FlutterPlugin, SignalrApi.SignalRHostApi {
 
             hub = connection.createHubProxy(connectionOptions.hubName)
 
+//            connectionOptions.hubMethods?.forEach { methodName ->
+//                hub.on(methodName, { res ->
+//                    Handler(Looper.getMainLooper()).post {
+//                        try {
+//                            // Assuming res is a JSON array string containing multiple elements
+//                            val jsonArray = JSONArray(res)
+//                            val messageArgs = mutableListOf<String>()
+//                            for (i in 0 until jsonArray.length()) {
+//                                messageArgs.add(jsonArray.getString(i))
+//                            }
+//                            signalrApi.onNewMessage(methodName, messageArgs) { }
+//                        } catch (e: Exception) {
+//                            e.printStackTrace()
+//                        }
+//                    }
+//                }, String::class.java)
+//            }
             connectionOptions.hubMethods?.forEach { methodName ->
-                hub.on(methodName, { res ->
+                hub.on(methodName, { res1, res2 ->
                     Handler(Looper.getMainLooper()).post {
-                        signalrApi.onNewMessage(methodName, res) { }
+                        val messageArgs = listOf(res1, res2)
+                        signalrApi.onNewMessage(methodName, messageArgs) { }
                     }
-                }, String::class.java)
+                }, String::class.java, String::class.java)
             }
 
             connection.connected {
