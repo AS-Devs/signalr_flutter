@@ -10,24 +10,16 @@ class SignalR extends SignalrPlatformInterface implements SignalRPlatformApi {
   final Function(String?)? connectionErrorCallback;
   // Constructor
   SignalR(
-    String baseUrl,
-    String hubName, {
-    String? queryString,
-    Map<String, String>? headers,
-    List<String>? hubMethods,
+    super.baseUrl,
+    super.hubName, {
+    super.queryString,
+    super.headers,
+    super.hubMethods,
     Transport transport = Transport.auto,
-    void Function(ConnectionStatus?)? statusChangeCallback,
-    void Function(String, String)? hubCallback,
+    super.statusChangeCallback,
+    super.hubCallback,
     this.connectionErrorCallback,
-  }) : super(
-          baseUrl,
-          hubName,
-          queryString: queryString,
-          headers: headers,
-          hubMethods: hubMethods,
-          statusChangeCallback: statusChangeCallback,
-          hubCallback: hubCallback,
-        );
+  });
 
   //---- Callback Methods ----//
   // ------------------------//
@@ -117,11 +109,9 @@ class SignalR extends SignalrPlatformInterface implements SignalRPlatformApi {
 
   /// Invoke any server method with optional [arguments].
   @override
-  Future<String> invokeMethod(String methodName,
-      {List<String>? arguments}) async {
+  Future<String> invokeMethod(String methodName, {List<String>? arguments}) async {
     try {
-      return await _signalrApi.invokeMethod(
-          methodName, arguments ?? List.empty());
+      return await _signalrApi.invokeMethod(methodName, arguments ?? List.empty());
     } catch (e) {
       return Future.error(e);
     }

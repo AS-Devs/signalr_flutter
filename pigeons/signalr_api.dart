@@ -61,7 +61,6 @@ void configurePigeon(PigeonOptions opts) {
     dartOut: '../lib/signalr_api.dart',
     objcHeaderOut: 'ios/Classes/signalr_api.h',
     objcSourceOut: 'ios/Classes/signalr_api.m',
-    javaOut:
-        'android/src/main/java/dev/asdevs/signalr_flutter/Signalr_Api.java',
+    javaOut: 'android/src/main/java/dev/asdevs/signalr_flutter/Signalr_Api.java',
   );
 }
