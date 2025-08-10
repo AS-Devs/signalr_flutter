@@ -94,17 +94,17 @@
     * `invokeMethod` now returns only string as result.
     * `hubCallback` now also returns string as message instead of dynamic.
 
+## 0.2.1
 
-## unreleased
+* [#64] upgraded GPA (Android Gradle Plugin) to version 8 to comply to deprication of the old flutter gradle implementation.
 
-- [#64] upgraded GPA (Android Gradle Plugin) to version 8 to comply to deprication of the old flutter gradle implementation.
-(link)[https://docs.flutter.dev/release/breaking-changes/flutter-gradle-plugin-apply]
-
-- [#64] Plugin now requires the following:
+* [#64] Plugin now requires the following:
     - Flutter >=3.19.0
     - Dart >=3.3.0
     - compileSDK 33 for Android part
     - Java 17 for Android part
     - Gradle 8.0 for Android part
+
+* Connection error feedback with `connectionErrorCallback`
 
 
