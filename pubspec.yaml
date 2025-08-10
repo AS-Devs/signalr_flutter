@@ -6,7 +6,7 @@ issue_tracker: https://github.com/AS-Devs/signalr_flutter/issues
 
 environment:
   flutter: ">=3.19.0"
-  sdk: ">=3.2.0"
+  sdk: ">=3.2.0 <4.0.0"
 
 dependencies:
   flutter:
